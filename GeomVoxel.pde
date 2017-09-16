@@ -33,7 +33,7 @@ int colorLoc;
 
 void settings() {
   size(1400, 700, P3D);
-  PJOGL.profile = 3;
+  PJOGL.profile = 4;
 }
 
 void setup(){
@@ -84,7 +84,7 @@ background(255);
   updateGeometry();
 
   pgl = (PJOGL) beginPGL();  
-  gl = pgl.gl.getGL3();
+  gl = pgl.gl.getGL4();
 
   geoTest.bind();
   gl.glEnableVertexAttribArray(posLoc);
