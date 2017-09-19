@@ -17,6 +17,8 @@ out FragData {
 } FragOut;
  
 float size = 50.0;
+uniform int cubeindex_u =3;
+void vertList(int cubeindex, vec3 p[8]);
 
  void createVertex(vec3 offset){
    vec4 actualOffset = vec4(offset*size, 0.0);
@@ -29,16 +31,25 @@ float size = 50.0;
  
 void main() {
   
-
+/* 
 	createVertex(vec3(-1.0, 1.0, 1.0));
 	createVertex(vec3(-1.0, -1.0, 1.0));
 	createVertex(vec3(1.0, 1.0, 1.0));
 	createVertex(vec3(1.0, -1.0, 1.0));
 	
-	EndPrimitive();
+	EndPrimitive(); */
 
-  
-	
+  vec3 voxelVertices[8];
+  voxelVertices[0] = vec3(0.0, 0.0, 0.0);
+  voxelVertices[1] = vec3(1.0, 0.0, 0.0);
+  voxelVertices[2] = vec3(1.0, 1.0, 0.0);
+  voxelVertices[3] = vec3(0.0, 1.0, 0.0);
+
+  voxelVertices[4] = vec3(0.0, 0.0, 1.0);
+  voxelVertices[5] = vec3(1.0, 0.0, 1.0);
+  voxelVertices[6] = vec3(1.0, 1.0, 1.0);
+  voxelVertices[7] = vec3(0.0, 1.0, 1.0);
+	vertList(2, voxelVertices);
 
 }
 
@@ -337,20 +348,81 @@ int triTable[256][16] = {
   {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}};
 
 
-void renderCase(int cubeindex){
-  for (int i=0;triTable[cubeindex][i]!=-1;i+=3) {		
-    for(int e = 0; e<3; e++){
-      int edge = triTable[cubeindex][i+e];
+void renderCase(int cubeindex, vec3 vertlist[12]){
+/* 
+//triTable[cubeindex][1];
+int edge = 2;
+vertlist[edge];
 
+for(int e = 0; e<12; e++){     
+createVertex(vertlist[e]);
+vertlist[e];
+triTable[1][e];
+}
+ */
+  for (int i=0;triTable[32][i]!=-1;i+=3) {		
+    for(int e = 0; e<3; e++){
+      int edge = triTable[][i+e];
+      createVertex(vertlist[edge]);
       //PVector interSectPoint =  voxelEdges[edge].midPoint();
       //vertex(interSectPoint.x, interSectPoint.y, interSectPoint.z); 
     }
+    EndPrimitive(); 
   }
 }
-
-void midPoint(vec3 p1, vec3 p2){
+vec3 midPoint(vec3 p1, vec3 p2){
 
   vec3 pmid = (p1 + p2)/2;
+  return pmid;
 
 }
+void vertList(int cubeindex, vec3 p[8]){
+  vec3 vertlist[12];
+  //////////
+
+  if ( (edgeTable[cubeindex] & 1) !=0 )
+        vertlist[0] =  midPoint(p[0], p[1]);
+
+  if ( (edgeTable[cubeindex] & 2) !=0 )
+        vertlist[1] =  midPoint(p[1], p[2]);
+
+  if ( (edgeTable[cubeindex] & 4) !=0 )
+        vertlist[2] =  midPoint(p[2], p[3]);
+
+  if ( (edgeTable[cubeindex] & 8) !=0 )
+        vertlist[3] =  midPoint(p[3], p[0]);
+
+  ////////
+
+  if ( (edgeTable[cubeindex] & 16) !=0 )
+        vertlist[4] =  midPoint(p[4], p[5]);
+
+  if ( (edgeTable[cubeindex] & 32) !=0 )
+        vertlist[5] =  midPoint(p[5], p[6]);
+
+  if ( (edgeTable[cubeindex] & 64) !=0 )
+        vertlist[6] =  midPoint(p[6], p[7]);
+
+  if ( (edgeTable[cubeindex] & 128) !=0 )
+        vertlist[7] =  midPoint(p[7], p[4]);
+
+  ////////
+  
+  if ( (edgeTable[cubeindex] & 256) !=0 )
+        vertlist[8] =  midPoint(p[0], p[4]);
+
+  if ( (edgeTable[cubeindex] & 512) !=0 )
+        vertlist[9] =  midPoint(p[1], p[5]);
+
+  if ( (edgeTable[cubeindex] & 1024) !=0 )
+        vertlist[10] =  midPoint(p[2], p[6]);
+
+  if ( (edgeTable[cubeindex] & 2048) !=0 )
+        vertlist[11] =  midPoint(p[3], p[7]);
+
+  renderCase(cubeindex, vertlist);
+}
+
+
+
 

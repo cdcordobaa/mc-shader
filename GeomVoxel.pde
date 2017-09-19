@@ -39,7 +39,7 @@ void settings() {
 void setup(){
 
   
-  //cam = new PeasyCam(this, 100);
+  cam = new PeasyCam(this, 100);
   
  
   positions = new float[32];
