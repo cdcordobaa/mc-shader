@@ -9,7 +9,7 @@ import com.jogamp.opengl.GL3;
 import peasy.*;
 PeasyCam cam;
 
-PShader geoTest;
+PShader geoTestShader;
 
 PJOGL pgl;
 GL3 gl;
@@ -39,7 +39,7 @@ void settings() {
 void setup(){
 
   
-  cam = new PeasyCam(this, 100);
+  //cam = new PeasyCam(this, 100);
   
  
   positions = new float[32];
@@ -47,11 +47,11 @@ void setup(){
   indices = new int[12];
 
   posBuffer = allocateDirectFloatBuffer(32);
-  colorBuffer = allocateDirectFloatBuffer(32); 
+  colorBuffer = allocateDirectFloatBuffer(32);
   indexBuffer = allocateDirectIntBuffer(12);
 
-  geoTest = new GeometryShader(this, "PassthrouVert.glsl", "TestGeom.glsl", "SimpleFrag.glsl");
-  shader(geoTest);
+  geoTestShader = new GeometryShader(this, "PassthrouVert.glsl", "TestGeom.glsl", "SimpleFrag.glsl");
+  shader(geoTestShader);
 
   pgl = (PJOGL) beginPGL();
   gl = pgl.gl.getGL3();
@@ -62,10 +62,10 @@ void setup(){
   colorVboId = intBuffer.get(1);
   indexVboId = intBuffer.get(2);
 
-  geoTest.bind();
-  posLoc = gl.glGetAttribLocation(geoTest.glProgram, "position");
-  colorLoc = gl.glGetAttribLocation(geoTest.glProgram, "color");
-  geoTest.unbind();
+  geoTestShader.bind();
+  posLoc = gl.glGetAttribLocation(geoTestShader.glProgram, "position");
+  colorLoc = gl.glGetAttribLocation(geoTestShader.glProgram, "color");
+  geoTestShader.unbind();
 
   endPGL();
 
@@ -78,15 +78,16 @@ background(255);
   // Geometry transformations from Processing are automatically passed to the shader
   // as long as the uniforms in the shader have the right names.
   translate(width/2, height/2);
-  //rotateX(a);
+  rotateX(a);
   //rotateY(a*2);  
   stroke(100);
+
   updateGeometry();
 
   pgl = (PJOGL) beginPGL();  
   gl = pgl.gl.getGL4();
 
-  geoTest.bind();
+  geoTestShader.bind();
   gl.glEnableVertexAttribArray(posLoc);
   gl.glEnableVertexAttribArray(colorLoc);  
 
@@ -109,7 +110,7 @@ background(255);
 
   gl.glDisableVertexAttribArray(posLoc);
   gl.glDisableVertexAttribArray(colorLoc); 
-  geoTest.unbind();
+  geoTestShader.unbind();
 
   endPGL();
 
