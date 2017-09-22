@@ -6,6 +6,9 @@ layout (triangle_strip, max_vertices = 128) out;
 uniform mat4 transformMatrix;
 uniform mat4 modelviewMatrix;
 uniform mat3 normalMatrix;
+
+//light
+const vec3 lightDirection = normalize(vec3(0.5, -1.5, 1));
  
 in VertexData {
   vec4 color;
@@ -17,42 +20,6 @@ out FragData {
 } FragOut;
  
 float size = 50.0;
-uniform int cubeindex_u =3;
-void vertList(int cubeindex, vec3 p[8]);
-
- void createVertex(vec3 offset){
-   vec4 actualOffset = vec4(offset*size, 0.0);
-   vec4 worldPosition = gl_in[0].gl_Position + actualOffset;
-   gl_Position = transformMatrix * worldPosition;
-   FragOut.color = vec4(0,0,255,1);
-   EmitVertex();
- }
-
- 
-void main() {
-  
-/* 
-	createVertex(vec3(-1.0, 1.0, 1.0));
-	createVertex(vec3(-1.0, -1.0, 1.0));
-	createVertex(vec3(1.0, 1.0, 1.0));
-	createVertex(vec3(1.0, -1.0, 1.0));
-	
-	EndPrimitive(); */
-
-  vec3 voxelVertices[8];
-  voxelVertices[0] = vec3(0.0, 0.0, 0.0);
-  voxelVertices[1] = vec3(1.0, 0.0, 0.0);
-  voxelVertices[2] = vec3(1.0, 1.0, 0.0);
-  voxelVertices[3] = vec3(0.0, 1.0, 0.0);
-
-  voxelVertices[4] = vec3(0.0, 0.0, 1.0);
-  voxelVertices[5] = vec3(1.0, 0.0, 1.0);
-  voxelVertices[6] = vec3(1.0, 1.0, 1.0);
-  voxelVertices[7] = vec3(0.0, 1.0, 1.0);
-	vertList(172, voxelVertices);
-
-}
-
 
 int edgeTable[256] = {
   0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
@@ -347,7 +314,7 @@ int triTable[256][16] = {
   {0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
   {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}};
 
-int tritable_transpose[16][256] = {
+int triTable_transpose[16][256] = {
       {-1,	0,	0,	1,	1,	0,	9,	2,	3,	0,	1,	1,	3,	0,	3,	9,	4,	4,	0,	4,	1,	3,	9,	2,	8,	11,	9,	4,	3,	1,	4,	4,	9,	9,	0,	8,	1,	3,	5,	2,	9,	0,	0,	2,	10,	4,	5,	5,	9,	9,	0,	1,	9,	10,	8,	2,	7,	9,	2,	11,	9,	5,	11,	11,	10,	0,	9,	1,	1,	1,	9,	5,	2,	11,	0,	5,	6,	0,	3,	6,	5,	4,	1,	10,	6,	1,	8,	7,	3,	5,	0,	9,	8,	5,	0,	6,	10,	4,	10,	8,	1,	3,	0,	8,	10,	0,	3,	6,	9,	8,	3,	6,	7,	0,	10,	10,	1,	2,	7,	7,	2,	2,	1,	11,	8,	0,	7,	7,	7,	3,	0,	8,	10,	1,	2,	6,	7,	7,	2,	1,	10,	10,	0,	7,	6,	3,	8,	9,	6,	1,	4,	10,	8,	0,	1,	1,	8,	10,	4,	10,	4,	0,	5,	11,	9,	6,	7,	3,	7,	9,	3,	6,	9,	1,	4,	7,	6,	3,	0,	6,	1,	0,	11,	6,	5,	9,	1,	1,	1,	10,	0,	10,	11,	11,	5,	10,	11,	0,	9,	7,	2,	8,	9,	9,	1,	0,	9,	9,	5,	5,	0,	10,	2,	0,	0,	9,	2,	5,	3,	5,	8,	0,	8,	9,	4,	0,	1,	3,	4,	9,	11,	11,	2,	9,	3,	1,	4,	4,	4,	4,	9,	3,	0,	3,	1,	3,	0,	3,	2,	9,	2,	1,	1,	0,	0,	-1},
       {-1,	8,	1,	8,	2,	8,	2,	8,	11,	11,	9,	11,	10,	10,	9,	8,	7,	3,	1,	1,	2,	4,	2,	10,	4,	4,	0,	7,	10,	11,	7,	7,	5,	5,	5,	5,	2,	0,	2,	10,	5,	11,	5,	1,	3,	9,	4,	4,	7,	3,	7,	5,	7,	1,	0,	10,	9,	5,	3,	2,	5,	7,	10,	10,	6,	8,	0,	8,	6,	6,	6,	9,	3,	0,	1,	10,	3,	8,	11,	5,	10,	3,	9,	6,	1,	2,	4,	3,	11,	10,	1,	2,	4,	1,	5,	5,	4,	10,	0,	3,	4,	0,	2,	3,	4,	8,	11,	4,	6,	11,	11,	4,	10,	7,	6,	6,	2,	6,	8,	3,	3,	0,	8,	2,	9,	9,	8,	11,	6,	0,	1,	1,	1,	2,	9,	11,	2,	0,	7,	6,	7,	7,	3,	6,	8,	6,	6,	4,	8,	2,	11,	9,	2,	4,	9,	9,	1,	1,	6,	9,	9,	8,	0,	7,	5,	11,	6,	4,	2,	5,	6,	2,	5,	6,	0,	6,	9,	6,	11,	11,	2,	11,	8,	11,	8,	5,	5,	5,	3,	1,	3,	5,	5,	5,	11,	7,	1,	8,	7,	5,	5,	2,	0,	8,	3,	8,	0,	8,	8,	0,	1,	11,	5,	4,	2,	4,	5,	10,	10,	10,	4,	4,	4,	4,	11,	8,	10,	1,	11,	7,	7,	7,	9,	10,	7,	10,	9,	9,	0,	8,	10,	0,	1,	1,	2,	0,	2,	2,	3,	10,	3,	10,	3,	9,	3,	-1},
       {-1,	3,	9,	3,	10,	3,	10,	3,	2,	2,	0,	2,	1,	1,	0,	10,	8,	0,	9,	9,	10,	7,	10,	9,	7,	7,	1,	11,	1,	10,	8,	11,	4,	4,	4,	4,	10,	8,	10,	5,	4,	2,	4,	5,	11,	5,	0,	8,	8,	0,	8,	3,	8,	2,	2,	5,	5,	7,	11,	1,	8,	0,	0,	5,	5,	3,	1,	3,	5,	5,	5,	8,	11,	8,	9,	6,	11,	11,	6,	9,	6,	0,	0,	5,	2,	5,	7,	9,	2,	6,	9,	1,	7,	11,	9,	9,	9,	6,	1,	1,	9,	8,	4,	2,	9,	2,	2,	1,	4,	1,	6,	8,	6,	3,	7,	7,	6,	9,	0,	2,	11,	7,	0,	1,	6,	1,	0,	6,	11,	8,	9,	9,	2,	10,	0,	7,	3,	8,	6,	2,	6,	6,	7,	10,	4,	11,	11,	6,	4,	10,	8,	3,	3,	2,	0,	4,	3,	0,	3,	4,	5,	3,	1,	6,	4,	7,	11,	8,	3,	4,	2,	8,	4,	10,	10,	10,	5,	11,	8,	3,	10,	3,	5,	3,	9,	6,	8,	6,	6,	0,	8,	6,	10,	10,	7,	5,	2,	3,	5,	2,	10,	0,	1,	2,	5,	7,	3,	7,	4,	4,	9,	4,	1,	11,	5,	5,	10,	2,	2,	2,	5,	5,	5,	5,	7,	3,	11,	4,	7,	4,	4,	4,	10,	7,	10,	2,	1,	1,	3,	7,	8,	9,	10,	10,	11,	9,	11,	11,	8,	2,	8,	2,	8,	1,	8,	-1},
@@ -365,102 +332,81 @@ int tritable_transpose[16][256] = {
       {-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	0,	0,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	9,	-1,	-1,	-1,	6,	-1,	11,	7,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	1,	-1,	1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	9,	-1,	-1,	-1,	7,	11,	-1,	6,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	3,	-1,	-1,	-1,	-1,	-1,	-1,	3,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	6,	-1,	-1,	-1,	8,	-1,	4,	10,	-1,	-1,	-1,	-1,	-1,	-1,	10,	5,	-1,	-1,	-1,	8,	-1,	6,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	2,	-1,	-1,	-1,	2,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	4,	-1,	11,	5,	-1,	-1,	-1,	9,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	4,	-1,	3,	-1,	-1,	-1,	7,	10,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1},
       {-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1}};
 
+ void createVertex(vec3 offset, float brightness){
+   vec4 actualOffset = vec4(offset*size, 0.0);
+   vec4 worldPosition = gl_in[0].gl_Position + actualOffset;
+   gl_Position = transformMatrix * worldPosition;
+   FragOut.color = vec4(0,0,255,1) * brightness;
+   EmitVertex();
+ }
+
+vec3 generateNormal(vec3 uv, vec3 uw){
+  return normalize(cross(uv, uw));
+}
+ 
+void createTriangle(vec3 u, vec3 v, vec3 w){
+
+  vec3 triangle_normal = generateNormal(u-v, v-w);
+  float brightness = max(dot(-lightDirection, triangle_normal), 0.3);
+
+  createVertex(u, brightness);
+  createVertex(v, brightness);
+  createVertex(w, brightness);
+  EndPrimitive(); 
+
+}
 
 void renderCase(int cubeindex, vec3 vertlist[12]){
-      int edge = -1;
-      /* //triTable[cubeindex][1];
-      int edge = 2;
-      vertlist[edge];
+ 
+ int edge = -1;
+ int u,v,w;
 
-      for(int e = 0; e<12; e++){     
-      //createVertex(vertlist[e]);
-      vertlist[e];
-      //triTable[1][e];1
-      edge = tritable_transpose[0+e][cubeindex];
-      createVertex(vertlist[edge]);
-      } */
+ if(triTable_transpose[0][cubeindex] != -1){
+      u = triTable_transpose[0][cubeindex];  
+      v = triTable_transpose[1][cubeindex];
+      w = triTable_transpose[2][cubeindex];
 
-  for (int i=0;triTable[172][i]!=-1;i+=3) {		
-    for(int e = 0; e<3; e++){
-      int edge = triTable[172][i+e];
-      createVertex(vertlist[edge]);
-      //PVector interSectPoint =  voxelEdges[edge].midPoint();
-      //vertex(interSectPoint.x, interSectPoint.y, interSectPoint.z); 
-    }
-    EndPrimitive(); 
-  }
-/* 
- if(tritable_transpose[0][cubeindex] != -1){
-      edge = tritable_transpose[0][cubeindex];
-      createVertex(vertlist[edge]);
-
-      edge = tritable_transpose[1][cubeindex];
-      createVertex(vertlist[edge]);
-
-      edge = tritable_transpose[2][cubeindex];
-      createVertex(vertlist[edge]);
-      EndPrimitive(); 
+      createTriangle(vertlist[u], vertlist[v], vertlist[w]);
+      
  }
 
- if(tritable_transpose[3][cubeindex] != -1){
-      edge = tritable_transpose[3][cubeindex];
-      createVertex(vertlist[edge]);
-
-      edge = tritable_transpose[4][cubeindex];
-      createVertex(vertlist[edge]);
-
-      edge = tritable_transpose[5][cubeindex];
-      createVertex(vertlist[edge]);
-      EndPrimitive(); 
+ if(triTable_transpose[3][cubeindex] != -1){
+      u = triTable_transpose[3][cubeindex];  
+      v = triTable_transpose[4][cubeindex];
+      w = triTable_transpose[5][cubeindex];
+      createTriangle(vertlist[u], vertlist[v], vertlist[w]);
  }
 
- if(tritable_transpose[6][cubeindex] != -1){
-      edge = tritable_transpose[6][cubeindex];
-      createVertex(vertlist[edge]);
-
-      edge = tritable_transpose[7][cubeindex];
-      createVertex(vertlist[edge]);
-
-      edge = tritable_transpose[8][cubeindex];
-      createVertex(vertlist[edge]);
-      EndPrimitive(); 
+ if(triTable_transpose[6][cubeindex] != -1){
+      u = triTable_transpose[6][cubeindex];  
+      v = triTable_transpose[7][cubeindex];
+      w = triTable_transpose[8][cubeindex];
+      createTriangle(vertlist[u], vertlist[v], vertlist[w]);
  }
 
- if(tritable_transpose[9][cubeindex] != -1){
-      edge = tritable_transpose[9][cubeindex];
-      createVertex(vertlist[edge]);
-
-      edge = tritable_transpose[10][cubeindex];
-      createVertex(vertlist[edge]);
-
-      edge = tritable_transpose[11][cubeindex];
-      createVertex(vertlist[edge]);
-      EndPrimitive(); 
+ if(triTable_transpose[9][cubeindex] != -1){
+      u = triTable_transpose[9][cubeindex];  
+      v = triTable_transpose[10][cubeindex];
+      w = triTable_transpose[11][cubeindex];
+      createTriangle(vertlist[u], vertlist[v], vertlist[w]);
  }
 
- if(tritable_transpose[12][cubeindex] != -1){
-      edge = tritable_transpose[12][cubeindex];
-      createVertex(vertlist[edge]);
-
-      edge = tritable_transpose[13][cubeindex];
-      createVertex(vertlist[edge]);
-
-      edge = tritable_transpose[14][cubeindex];
-      createVertex(vertlist[edge]);
-      EndPrimitive(); 
+ if(triTable_transpose[12][cubeindex] != -1){
+      u = triTable_transpose[12][cubeindex];  
+      v = triTable_transpose[13][cubeindex];
+      w = triTable_transpose[14][cubeindex];
+      createTriangle(vertlist[u], vertlist[v], vertlist[w]);
  }
- */
+
 }
 
 vec3 midPoint(vec3 p1, vec3 p2){
-
-  vec3 pmid = (p1 + p2)/2;
-  return pmid;
-
+   return (p1 + p2)/2;
 }
+
 void vertList(int cubeindex, vec3 p[8]){
+ 
   vec3 vertlist[12];
-  //////////
 
   if ( (edgeTable[cubeindex] & 1) !=0 )
         vertlist[0] =  midPoint(p[0], p[1]);
@@ -474,7 +420,6 @@ void vertList(int cubeindex, vec3 p[8]){
   if ( (edgeTable[cubeindex] & 8) !=0 )
         vertlist[3] =  midPoint(p[3], p[0]);
 
-  ////////
 
   if ( (edgeTable[cubeindex] & 16) !=0 )
         vertlist[4] =  midPoint(p[4], p[5]);
@@ -488,7 +433,6 @@ void vertList(int cubeindex, vec3 p[8]){
   if ( (edgeTable[cubeindex] & 128) !=0 )
         vertlist[7] =  midPoint(p[7], p[4]);
 
-  ////////
   
   if ( (edgeTable[cubeindex] & 256) !=0 )
         vertlist[8] =  midPoint(p[0], p[4]);
@@ -502,9 +446,68 @@ void vertList(int cubeindex, vec3 p[8]){
   if ( (edgeTable[cubeindex] & 2048) !=0 )
         vertlist[11] =  midPoint(p[3], p[7]);
 
-  renderCase(cubeindex, vertlist);
+  //return vertlist;
 }
 
+ void main() {
+  
+  int cubeindex = 172;
+
+  vec3 voxelVertices[8];
+  vec3 vertlist[12]; 
+
+  voxelVertices[0] = vec3(0.0, 0.0, 0.0);
+  voxelVertices[1] = vec3(1.0, 0.0, 0.0);
+  voxelVertices[2] = vec3(1.0, 1.0, 0.0);
+  voxelVertices[3] = vec3(0.0, 1.0, 0.0);
+
+  voxelVertices[4] = vec3(0.0, 0.0, 1.0);
+  voxelVertices[5] = vec3(1.0, 0.0, 1.0);
+  voxelVertices[6] = vec3(1.0, 1.0, 1.0);
+  voxelVertices[7] = vec3(0.0, 1.0, 1.0);
+
+
+  if ( (edgeTable[cubeindex] & 1) !=0 )
+        vertlist[0] =  midPoint(voxelVertices[0], voxelVertices[1]);
+
+  if ( (edgeTable[cubeindex] & 2) !=0 )
+        vertlist[1] =  midPoint(voxelVertices[1], voxelVertices[2]);
+
+  if ( (edgeTable[cubeindex] & 4) !=0 )
+        vertlist[2] =  midPoint(voxelVertices[2], voxelVertices[3]);
+
+  if ( (edgeTable[cubeindex] & 8) !=0 )
+        vertlist[3] =  midPoint(voxelVertices[3], voxelVertices[0]);
+
+
+  if ( (edgeTable[cubeindex] & 16) !=0 )
+        vertlist[4] =  midPoint(voxelVertices[4], voxelVertices[5]);
+
+  if ( (edgeTable[cubeindex] & 32) !=0 )
+        vertlist[5] =  midPoint(voxelVertices[5], voxelVertices[6]);
+
+  if ( (edgeTable[cubeindex] & 64) !=0 )
+        vertlist[6] =  midPoint(voxelVertices[6], voxelVertices[7]);
+
+  if ( (edgeTable[cubeindex] & 128) !=0 )
+        vertlist[7] =  midPoint(voxelVertices[7], voxelVertices[4]);
+
+  
+  if ( (edgeTable[cubeindex] & 256) !=0 )
+        vertlist[8] =  midPoint(voxelVertices[0], voxelVertices[4]);
+
+  if ( (edgeTable[cubeindex] & 512) !=0 )
+        vertlist[9] =  midPoint(voxelVertices[1], voxelVertices[5]);
+
+  if ( (edgeTable[cubeindex] & 1024) !=0 )
+        vertlist[10] =  midPoint(voxelVertices[2], voxelVertices[6]);
+
+  if ( (edgeTable[cubeindex] & 2048) !=0 )
+        vertlist[11] =  midPoint(voxelVertices[3], voxelVertices[7]);
+
+  renderCase(cubeindex, vertlist);
+
+}
 
 
 
