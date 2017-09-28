@@ -21,7 +21,7 @@ out FragData {
   vec4 color;
 } FragOut;
  
-float size = 5.0;
+float size = 1.0;
 
 int edgeTable[256] = {
   0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
@@ -160,23 +160,23 @@ float getIsovalue(int index){
    
   float isolevel = 0;
   int cubeindex = 0;
-/*   if (getIsovalue(0) < isolevel) cubeindex |= 1;
+  if (getIsovalue(0) < isolevel) cubeindex |= 1;
   if (getIsovalue(1) < isolevel) cubeindex |= 2;
   if (getIsovalue(2) < isolevel) cubeindex |= 4;
   if (getIsovalue(3) < isolevel) cubeindex |= 8;
   if (getIsovalue(4) < isolevel) cubeindex |= 16;
   if (getIsovalue(5) < isolevel) cubeindex |= 32;
   if (getIsovalue(6) < isolevel) cubeindex |= 64;
-  if (getIsovalue(7) < isolevel) cubeindex |= 128; */
+  if (getIsovalue(7) < isolevel) cubeindex |= 128;
 
-  cubeindex = int(getIsovalue(0) < isolevel); 
+/*   cubeindex = int(getIsovalue(0) < isolevel); 
   cubeindex += int(getIsovalue(1) < isolevel)<<1; 
   cubeindex += int(getIsovalue(2) < isolevel)<<2; 
   cubeindex += int(getIsovalue(3) < isolevel)<<3; 
   cubeindex += int(getIsovalue(4) < isolevel)<<4; 
   cubeindex += int(getIsovalue(5) < isolevel)<<5; 
   cubeindex += int(getIsovalue(6) < isolevel)<<6; 
-  cubeindex += int(getIsovalue(7) < isolevel)<<7; 
+  cubeindex += int(getIsovalue(7) < isolevel)<<7;  */
 
       //cubeindex = 9;
     

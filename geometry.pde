@@ -126,8 +126,8 @@ void updateGeometry(){
  
 
   //int resolution = 5;
-  float axisMin = -20;
-  float axisMax =  20;
+  float axisMin = -10;
+  float axisMax =  10;
   float axisRange = axisMax - axisMin;
   float delta = axisRange/(resolution);
   float x, y, z;
@@ -198,7 +198,7 @@ void updateGeometry(){
 float isoFunction(float x, float y, float z){
         /* float a = pow(x, 2) + pow(y, 2) + pow(z, 2) - 1;
         println("var: "+x+y+z+"   "+ a); */
-        return pow(x, 2) + pow(y, 2) + pow(z, 2) - 300;
+        return pow(x, 2) + pow(y, 2) + pow(z, 2) - 100;
 }
 
 

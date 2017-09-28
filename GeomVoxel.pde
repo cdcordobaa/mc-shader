@@ -43,7 +43,7 @@ int vertIsovaluesLoc_1;
 int vertIsovaluesLoc_2;
 
 
-int resolution = 25;
+int resolution = 20;
 
 void settings() {
   size(1400, 700, P3D);
@@ -110,10 +110,10 @@ background(255);
   // Geometry transformations from Processing are automatically passed to the shader
   // as long as the uniforms in the shader have the right names.
   translate(width/2, height/2);
-  //rotateX(a);
+  rotateX(a);
   rotateY(a*2);  
   stroke(100);
-  scale(5);
+  scale(10);
   //updateGeometry();
 
   pgl = (PJOGL) beginPGL();  
@@ -122,6 +122,10 @@ background(255);
   geoTestShader.bind();
   gl.glEnableVertexAttribArray(posLoc);
   gl.glEnableVertexAttribArray(colorLoc);  
+  gl.glEnableVertexAttribArray(vertIsovaluesLoc_1);  
+  gl.glEnableVertexAttribArray(vertIsovaluesLoc_2);  
+
+
 
   // Copy vertex data to VBOs
   gl.glBindBuffer(GL.GL_ARRAY_BUFFER, posVboId);
@@ -152,6 +156,9 @@ background(255);
 
   gl.glDisableVertexAttribArray(posLoc);
   gl.glDisableVertexAttribArray(colorLoc); 
+  gl.glDisableVertexAttribArray(vertIsovaluesLoc_1); 
+  gl.glDisableVertexAttribArray(vertIsovaluesLoc_2); 
+
   geoTestShader.unbind();
 
   endPGL();
