@@ -13,13 +13,15 @@ const vec3 lightDirection = normalize(vec3(0.4, -10, 0.8));
 in VertexData {
   vec4 color;
   vec3 normal;
+  vec4 vertIsovalues_1;
+  vec4 vertIsovalues_2;
 } VertexIn[];
  
 out FragData {
   vec4 color;
 } FragOut;
  
-float size = 50.0;
+float size = 5.0;
 
 int edgeTable[256] = {
   0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
@@ -56,8 +58,6 @@ int edgeTable[256] = {
   0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0   };
 
 
-
-
 int triTable_transpose[16][256] = {
       {-1,	0,	0,	1,	1,	0,	9,	2,	3,	0,	1,	1,	3,	0,	3,	9,	4,	4,	0,	4,	1,	3,	9,	2,	8,	11,	9,	4,	3,	1,	4,	4,	9,	9,	0,	8,	1,	3,	5,	2,	9,	0,	0,	2,	10,	4,	5,	5,	9,	9,	0,	1,	9,	10,	8,	2,	7,	9,	2,	11,	9,	5,	11,	11,	10,	0,	9,	1,	1,	1,	9,	5,	2,	11,	0,	5,	6,	0,	3,	6,	5,	4,	1,	10,	6,	1,	8,	7,	3,	5,	0,	9,	8,	5,	0,	6,	10,	4,	10,	8,	1,	3,	0,	8,	10,	0,	3,	6,	9,	8,	3,	6,	7,	0,	10,	10,	1,	2,	7,	7,	2,	2,	1,	11,	8,	0,	7,	7,	7,	3,	0,	8,	10,	1,	2,	6,	7,	7,	2,	1,	10,	10,	0,	7,	6,	3,	8,	9,	6,	1,	4,	10,	8,	0,	1,	1,	8,	10,	4,	10,	4,	0,	5,	11,	9,	6,	7,	3,	7,	9,	3,	6,	9,	1,	4,	7,	6,	3,	0,	6,	1,	0,	11,	6,	5,	9,	1,	1,	1,	10,	0,	10,	11,	11,	5,	10,	11,	0,	9,	7,	2,	8,	9,	9,	1,	0,	9,	9,	5,	5,	0,	10,	2,	0,	0,	9,	2,	5,	3,	5,	8,	0,	8,	9,	4,	0,	1,	3,	4,	9,	11,	11,	2,	9,	3,	1,	4,	4,	4,	4,	9,	3,	0,	3,	1,	3,	0,	3,	2,	9,	2,	1,	1,	0,	0,	-1},
       {-1,	8,	1,	8,	2,	8,	2,	8,	11,	11,	9,	11,	10,	10,	9,	8,	7,	3,	1,	1,	2,	4,	2,	10,	4,	4,	0,	7,	10,	11,	7,	7,	5,	5,	5,	5,	2,	0,	2,	10,	5,	11,	5,	1,	3,	9,	4,	4,	7,	3,	7,	5,	7,	1,	0,	10,	9,	5,	3,	2,	5,	7,	10,	10,	6,	8,	0,	8,	6,	6,	6,	9,	3,	0,	1,	10,	3,	8,	11,	5,	10,	3,	9,	6,	1,	2,	4,	3,	11,	10,	1,	2,	4,	1,	5,	5,	4,	10,	0,	3,	4,	0,	2,	3,	4,	8,	11,	4,	6,	11,	11,	4,	10,	7,	6,	6,	2,	6,	8,	3,	3,	0,	8,	2,	9,	9,	8,	11,	6,	0,	1,	1,	1,	2,	9,	11,	2,	0,	7,	6,	7,	7,	3,	6,	8,	6,	6,	4,	8,	2,	11,	9,	2,	4,	9,	9,	1,	1,	6,	9,	9,	8,	0,	7,	5,	11,	6,	4,	2,	5,	6,	2,	5,	6,	0,	6,	9,	6,	11,	11,	2,	11,	8,	11,	8,	5,	5,	5,	3,	1,	3,	5,	5,	5,	11,	7,	1,	8,	7,	5,	5,	2,	0,	8,	3,	8,	0,	8,	8,	0,	1,	11,	5,	4,	2,	4,	5,	10,	10,	10,	4,	4,	4,	4,	11,	8,	10,	1,	11,	7,	7,	7,	9,	10,	7,	10,	9,	9,	0,	8,	10,	0,	1,	1,	2,	0,	2,	2,	3,	10,	3,	10,	3,	9,	3,	-1},
@@ -81,7 +81,7 @@ void createVertex(vec3 offset, float brightness){
 vec4 actualOffset = vec4(offset*size, 0.0);
 vec4 worldPosition = gl_in[0].gl_Position + actualOffset;
 gl_Position = transformMatrix * worldPosition;
-FragOut.color = VertexIn[0].color * brightness;
+FragOut.color = VertexIn[0].color /*vec4(255,0,255,1)*/ * brightness;
 EmitVertex();
 }
 
@@ -92,7 +92,7 @@ vec3 generateNormal(vec3 uv, vec3 uw){
 void createTriangle(vec3 u, vec3 v, vec3 w){
 
   vec3 triangle_normal = generateNormal(v-u, w-u);
-  float brightness = max(dot(-lightDirection, triangle_normal), 0.1);
+  float brightness = max(dot(lightDirection, triangle_normal), 0.1);
 
   createVertex(u, brightness);
   createVertex(v, brightness);
@@ -148,10 +148,38 @@ vec3 midPoint(vec3 p1, vec3 p2){
    return (p1 + p2)/2;
 }
 
- void main() {
-  
-  int cubeindex = 185;
+float getIsovalue(int index){
+      float isovalue = 0;
+      if(index < 4)
+            return VertexIn[0].vertIsovalues_1[index];
+      else 
+            return VertexIn[0].vertIsovalues_2[index%4];
+}
 
+ void main() {
+   
+  float isolevel = 0;
+  int cubeindex = 0;
+/*   if (getIsovalue(0) < isolevel) cubeindex |= 1;
+  if (getIsovalue(1) < isolevel) cubeindex |= 2;
+  if (getIsovalue(2) < isolevel) cubeindex |= 4;
+  if (getIsovalue(3) < isolevel) cubeindex |= 8;
+  if (getIsovalue(4) < isolevel) cubeindex |= 16;
+  if (getIsovalue(5) < isolevel) cubeindex |= 32;
+  if (getIsovalue(6) < isolevel) cubeindex |= 64;
+  if (getIsovalue(7) < isolevel) cubeindex |= 128; */
+
+  cubeindex = int(getIsovalue(0) < isolevel); 
+  cubeindex += int(getIsovalue(1) < isolevel)<<1; 
+  cubeindex += int(getIsovalue(2) < isolevel)<<2; 
+  cubeindex += int(getIsovalue(3) < isolevel)<<3; 
+  cubeindex += int(getIsovalue(4) < isolevel)<<4; 
+  cubeindex += int(getIsovalue(5) < isolevel)<<5; 
+  cubeindex += int(getIsovalue(6) < isolevel)<<6; 
+  cubeindex += int(getIsovalue(7) < isolevel)<<7; 
+
+      //cubeindex = 9;
+    
   vec3 voxelVertices[8];
   vec3 vertlist[12]; 
 
