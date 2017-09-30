@@ -9,7 +9,7 @@ import com.jogamp.opengl.GL3;
 import peasy.*;
 PeasyCam cam;
 
-PShader geoTestShader;
+PShader shaderMC;
 
 PJOGL pgl;
 GL3 gl;
@@ -20,12 +20,14 @@ int[] indices;
 
 float[] vertIsovalues_1;
 float[] vertIsovalues_2;
+float[] isoValuesTexture;
 
 float a;
 
 FloatBuffer posBuffer;
 FloatBuffer colorBuffer;
 IntBuffer indexBuffer;
+FloatBuffer textBuffer;
 
 FloatBuffer vertIsovaluesBuffer_1;
 FloatBuffer vertIsovaluesBuffer_2;
@@ -41,7 +43,8 @@ int posLoc;
 int colorLoc;
 int vertIsovaluesLoc_1;
 int vertIsovaluesLoc_2;
-
+int textLoc;
+int textureId;
 
 int resolution = 20;
 
@@ -64,6 +67,7 @@ void setup(){
   //indices = new int[12];
   vertIsovalues_1 = new float[size];
   vertIsovalues_2 = new float[size];
+  isoValuesTexture = new float[resolution*resolution*resolution];
 
 
 
@@ -75,16 +79,18 @@ void setup(){
   vertIsovaluesBuffer_1 = allocateDirectFloatBuffer(size);
   vertIsovaluesBuffer_2 = allocateDirectFloatBuffer(size);
 
+  textBuffer = allocateDirectFloatBuffer(resolution*resolution*resolution);
+
 
   indexBuffer = allocateDirectIntBuffer(12);
 
-  geoTestShader = new GeometryShader(this, "PassthrouVert.glsl", "TestGeom.glsl", "SimpleFrag.glsl");
-  shader(geoTestShader);
+  shaderMC = new GeometryShader(this, "PassthrouVert.glsl", "MarchingGeom.glsl", "SimpleFrag.glsl");
+  shader(shaderMC);
 
   pgl = (PJOGL) beginPGL();
   gl = pgl.gl.getGL4();
 
-  IntBuffer intBuffer = IntBuffer.allocate(4);  
+  IntBuffer intBuffer = IntBuffer.allocate(5);  
   gl.glGenBuffers(4, intBuffer);
   posVboId = intBuffer.get(0);
   colorVboId = intBuffer.get(1);
@@ -92,15 +98,24 @@ void setup(){
   vertIsovaluesVboId_1 = intBuffer.get(2);
   vertIsovaluesVboId_2 = intBuffer.get(3);
 
-  geoTestShader.bind();
-  posLoc = gl.glGetAttribLocation(geoTestShader.glProgram, "position");
-  colorLoc = gl.glGetAttribLocation(geoTestShader.glProgram, "color");
-  vertIsovaluesLoc_1 = gl.glGetAttribLocation(geoTestShader.glProgram, "vertIsovalues_1");
-  vertIsovaluesLoc_2 = gl.glGetAttribLocation(geoTestShader.glProgram, "vertIsovalues_2");
-  geoTestShader.unbind();
+
+  gl.glGenTextures(1, intBuffer);
+  textureId = intBuffer.get(4);
+
+  shaderMC.bind();
+  posLoc = gl.glGetAttribLocation(shaderMC.glProgram, "position");
+  colorLoc = gl.glGetAttribLocation(shaderMC.glProgram, "color");
+  vertIsovaluesLoc_1 = gl.glGetAttribLocation(shaderMC.glProgram, "vertIsovalues_1");
+  vertIsovaluesLoc_2 = gl.glGetAttribLocation(shaderMC.glProgram, "vertIsovalues_2");
+
+  textLoc = gl.glGetUniformLocation(shaderMC.glProgram, "isoValTex");
+  
+
+  shaderMC.unbind();
 
   endPGL();
   updateGeometry();
+  //textBuffer = FloatBuffer.wrap(isoValuesTexture)
 }
 
 void draw(){
@@ -119,14 +134,33 @@ background(255);
   pgl = (PJOGL) beginPGL();  
   gl = pgl.gl.getGL4();
 
-  geoTestShader.bind();
+  shaderMC.bind();
   gl.glEnableVertexAttribArray(posLoc);
   gl.glEnableVertexAttribArray(colorLoc);  
   gl.glEnableVertexAttribArray(vertIsovaluesLoc_1);  
-  gl.glEnableVertexAttribArray(vertIsovaluesLoc_2);  
+  gl.glEnableVertexAttribArray(vertIsovaluesLoc_2);
+ // gl.glUniform1i(textLoc, 0);
+  gl.glUniform1i(textLoc, 0);
+  gl.glActiveTexture(GL.GL_TEXTURE0);
 
+  gl.glBindTexture(GL3.GL_TEXTURE_3D, textureId);
+  gl.glTexParameteri(GL3.GL_TEXTURE_3D, GL3.GL_TEXTURE_MIN_FILTER, GL3.GL_LINEAR);
+  gl.glTexParameteri(GL3.GL_TEXTURE_3D, GL3.GL_TEXTURE_MAG_FILTER, GL3.GL_LINEAR);
+  gl.glTexParameteri(GL3.GL_TEXTURE_3D, GL3.GL_TEXTURE_WRAP_S, GL3.GL_CLAMP_TO_EDGE);
+  gl.glTexParameteri(GL3.GL_TEXTURE_3D, GL3.GL_TEXTURE_WRAP_T, GL3.GL_CLAMP_TO_EDGE);
+  gl.glTexParameteri(GL3.GL_TEXTURE_3D, GL3.GL_TEXTURE_WRAP_R, GL3.GL_CLAMP_TO_EDGE);
 
-
+ /*  gl.glTexParameteri(GL.GL_TEXTURE_3D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
+  gl.glTexParameteri(GL.GL_TEXTURE_3D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
+  gl.glTexParameteri(GL.GL_TEXTURE_3D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
+  gl.glTexParameteri(GL.GL_TEXTURE_3D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
+  gl.glTexParameteri(GL.GL_TEXTURE_3D, GL.GL_TEXTURE_WRAP_R, GL.GL_CLAMP_TO_EDGE);
+  */
+  
+  gl.glTexImage3D(GL3.GL_TEXTURE_3D, 0, GL.GL_LUMINANCE, resolution, resolution, resolution, 0, GL.GL_LUMINANCE, GL.GL_UNSIGNED_BYTE, textBuffer);
+   
+  
+  
   // Copy vertex data to VBOs
   gl.glBindBuffer(GL.GL_ARRAY_BUFFER, posVboId);
   gl.glBufferData(GL.GL_ARRAY_BUFFER, Float.BYTES * positions.length, posBuffer, GL.GL_DYNAMIC_DRAW);
@@ -144,7 +178,7 @@ background(255);
   gl.glBufferData(GL.GL_ARRAY_BUFFER, Float.BYTES * vertIsovalues_2.length, vertIsovaluesBuffer_2, GL.GL_DYNAMIC_DRAW);
   gl.glVertexAttribPointer(vertIsovaluesLoc_2, 4, GL.GL_FLOAT, false, 4 * Float.BYTES, 0);
 
-  gl.glDrawArrays(PGL.POINTS, 0, positions.length);
+  gl.glDrawArrays(PGL.POINTS, 0, positions.length/4);
 
   gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
 
@@ -159,7 +193,7 @@ background(255);
   gl.glDisableVertexAttribArray(vertIsovaluesLoc_1); 
   gl.glDisableVertexAttribArray(vertIsovaluesLoc_2); 
 
-  geoTestShader.unbind();
+  shaderMC.unbind();
 
   endPGL();
 

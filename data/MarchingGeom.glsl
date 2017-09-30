@@ -6,6 +6,7 @@ layout (triangle_strip, max_vertices = 128) out;
 uniform mat4 transformMatrix;
 uniform mat4 modelviewMatrix;
 uniform mat3 normalMatrix;
+uniform sampler3D isoValTex; 
 
 //light
 const vec3 lightDirection = normalize(vec3(0.4, -10, 0.8));
@@ -155,8 +156,22 @@ float getIsovalue(int index){
       else 
             return VertexIn[0].vertIsovalues_2[index%4];
 }
+vec3 voxelVertices[8];
+float getIsovaluef(int index){
+      return texture(isoValTex, voxelVertices[index]).a; 
+}
 
  void main() {
+
+  voxelVertices[0] = vec3(0.0, 0.0, 0.0);
+  voxelVertices[1] = vec3(1.0, 0.0, 0.0);
+  voxelVertices[2] = vec3(1.0, 1.0, 0.0);
+  voxelVertices[3] = vec3(0.0, 1.0, 0.0);
+
+  voxelVertices[4] = vec3(0.0, 0.0, 1.0);
+  voxelVertices[5] = vec3(1.0, 0.0, 1.0);
+  voxelVertices[6] = vec3(1.0, 1.0, 1.0);
+  voxelVertices[7] = vec3(0.0, 1.0, 1.0);
    
   float isolevel = 0;
   int cubeindex = 0;
@@ -178,21 +193,15 @@ float getIsovalue(int index){
   cubeindex += int(getIsovalue(6) < isolevel)<<6; 
   cubeindex += int(getIsovalue(7) < isolevel)<<7;  */
 
-      //cubeindex = 9;
+  cubeindex = 0;
     
-  vec3 voxelVertices[8];
+  
   vec3 vertlist[12]; 
 
-  voxelVertices[0] = vec3(0.0, 0.0, 0.0);
-  voxelVertices[1] = vec3(1.0, 0.0, 0.0);
-  voxelVertices[2] = vec3(1.0, 1.0, 0.0);
-  voxelVertices[3] = vec3(0.0, 1.0, 0.0);
-
-  voxelVertices[4] = vec3(0.0, 0.0, 1.0);
-  voxelVertices[5] = vec3(1.0, 0.0, 1.0);
-  voxelVertices[6] = vec3(1.0, 1.0, 1.0);
-  voxelVertices[7] = vec3(0.0, 1.0, 1.0);
-
+  vec4 a = texture(isoValTex, voxelVertices[2]);
+      if(a.y > 0){
+            cubeindex =3;
+      }
 
   if ( (edgeTable[cubeindex] & 1) !=0 )
         vertlist[0] =  midPoint(voxelVertices[0], voxelVertices[1]);
