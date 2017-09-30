@@ -22,7 +22,7 @@ out FragData {
   vec4 color;
 } FragOut;
  
-float size = 1.0;
+float size = 5.0;
 
 int edgeTable[256] = {
   0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
@@ -158,7 +158,11 @@ float getIsovalue(int index){
 }
 vec3 voxelVertices[8];
 float getIsovaluef(int index){
-      return texture(isoValTex, voxelVertices[index]).a; 
+
+vec4 actualOffset = vec4(voxelVertices[index]*size, 0.0);
+vec4 worldPosition = gl_in[0].gl_Position + actualOffset;
+
+      return texture(isoValTex, (worldPosition.xyz+1.0)/2.0).a; 
 }
 
  void main() {
@@ -172,7 +176,17 @@ float getIsovaluef(int index){
   voxelVertices[5] = vec3(1.0, 0.0, 1.0);
   voxelVertices[6] = vec3(1.0, 1.0, 1.0);
   voxelVertices[7] = vec3(0.0, 1.0, 1.0);
+
+  for(int i = 0; i<4; i++){
+      vec4 actualOffset = vec4(voxelVertices[i]*size, 0.0);
+      vec4 worldPosition = gl_in[0].gl_Position + actualOffset;
+      gl_Position = transformMatrix * worldPosition;
+      FragOut.color =  vec4(1,0,0,1)+normalize(texture(isoValTex, worldPosition.xyz));
+      EmitVertex();
+  }
+  EndPrimitive();
    
+/* 
   float isolevel = 0;
   int cubeindex = 0;
   if (getIsovalue(0) < isolevel) cubeindex |= 1;
@@ -184,24 +198,11 @@ float getIsovaluef(int index){
   if (getIsovalue(6) < isolevel) cubeindex |= 64;
   if (getIsovalue(7) < isolevel) cubeindex |= 128;
 
-/*   cubeindex = int(getIsovalue(0) < isolevel); 
-  cubeindex += int(getIsovalue(1) < isolevel)<<1; 
-  cubeindex += int(getIsovalue(2) < isolevel)<<2; 
-  cubeindex += int(getIsovalue(3) < isolevel)<<3; 
-  cubeindex += int(getIsovalue(4) < isolevel)<<4; 
-  cubeindex += int(getIsovalue(5) < isolevel)<<5; 
-  cubeindex += int(getIsovalue(6) < isolevel)<<6; 
-  cubeindex += int(getIsovalue(7) < isolevel)<<7;  */
-
-  cubeindex = 0;
+  //cubeindex = 0;
     
   
   vec3 vertlist[12]; 
 
-  vec4 a = texture(isoValTex, voxelVertices[2]);
-      if(a.y > 0){
-            cubeindex =3;
-      }
 
   if ( (edgeTable[cubeindex] & 1) !=0 )
         vertlist[0] =  midPoint(voxelVertices[0], voxelVertices[1]);
@@ -242,7 +243,7 @@ float getIsovaluef(int index){
         vertlist[11] =  midPoint(voxelVertices[3], voxelVertices[7]);
 
   renderCase(cubeindex, vertlist);
-
+ */
 }
 
 

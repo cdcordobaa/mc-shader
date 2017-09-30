@@ -46,7 +46,7 @@ int vertIsovaluesLoc_2;
 int textLoc;
 int textureId;
 
-int resolution = 20;
+int resolution = 3;
 
 void settings() {
   size(1400, 700, P3D);
@@ -79,11 +79,10 @@ void setup(){
   vertIsovaluesBuffer_1 = allocateDirectFloatBuffer(size);
   vertIsovaluesBuffer_2 = allocateDirectFloatBuffer(size);
 
-  textBuffer = allocateDirectFloatBuffer(resolution*resolution*resolution);
+  textBuffer = allocateDirectFloatBuffer(size);
 
 
-  indexBuffer = allocateDirectIntBuffer(12);
-
+  
   shaderMC = new GeometryShader(this, "PassthrouVert.glsl", "MarchingGeom.glsl", "SimpleFrag.glsl");
   shader(shaderMC);
 
@@ -99,14 +98,18 @@ void setup(){
   vertIsovaluesVboId_2 = intBuffer.get(3);
 
 
-  gl.glGenTextures(1, intBuffer);
-  textureId = intBuffer.get(4);
+  
 
   shaderMC.bind();
   posLoc = gl.glGetAttribLocation(shaderMC.glProgram, "position");
   colorLoc = gl.glGetAttribLocation(shaderMC.glProgram, "color");
   vertIsovaluesLoc_1 = gl.glGetAttribLocation(shaderMC.glProgram, "vertIsovalues_1");
   vertIsovaluesLoc_2 = gl.glGetAttribLocation(shaderMC.glProgram, "vertIsovalues_2");
+
+  intBuffer = IntBuffer.allocate(1);  
+  gl.glGenTextures(1, intBuffer);
+  textureId = intBuffer.get(0);
+  println("textureId: "+textureId);
 
   textLoc = gl.glGetUniformLocation(shaderMC.glProgram, "isoValTex");
   
@@ -115,7 +118,7 @@ void setup(){
 
   endPGL();
   updateGeometry();
-  //textBuffer = FloatBuffer.wrap(isoValuesTexture)
+  textBuffer = FloatBuffer.wrap(isoValuesTexture);
 }
 
 void draw(){
@@ -139,27 +142,8 @@ background(255);
   gl.glEnableVertexAttribArray(colorLoc);  
   gl.glEnableVertexAttribArray(vertIsovaluesLoc_1);  
   gl.glEnableVertexAttribArray(vertIsovaluesLoc_2);
- // gl.glUniform1i(textLoc, 0);
-  gl.glUniform1i(textLoc, 0);
-  gl.glActiveTexture(GL.GL_TEXTURE0);
 
-  gl.glBindTexture(GL3.GL_TEXTURE_3D, textureId);
-  gl.glTexParameteri(GL3.GL_TEXTURE_3D, GL3.GL_TEXTURE_MIN_FILTER, GL3.GL_LINEAR);
-  gl.glTexParameteri(GL3.GL_TEXTURE_3D, GL3.GL_TEXTURE_MAG_FILTER, GL3.GL_LINEAR);
-  gl.glTexParameteri(GL3.GL_TEXTURE_3D, GL3.GL_TEXTURE_WRAP_S, GL3.GL_CLAMP_TO_EDGE);
-  gl.glTexParameteri(GL3.GL_TEXTURE_3D, GL3.GL_TEXTURE_WRAP_T, GL3.GL_CLAMP_TO_EDGE);
-  gl.glTexParameteri(GL3.GL_TEXTURE_3D, GL3.GL_TEXTURE_WRAP_R, GL3.GL_CLAMP_TO_EDGE);
-
- /*  gl.glTexParameteri(GL.GL_TEXTURE_3D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
-  gl.glTexParameteri(GL.GL_TEXTURE_3D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
-  gl.glTexParameteri(GL.GL_TEXTURE_3D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
-  gl.glTexParameteri(GL.GL_TEXTURE_3D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
-  gl.glTexParameteri(GL.GL_TEXTURE_3D, GL.GL_TEXTURE_WRAP_R, GL.GL_CLAMP_TO_EDGE);
-  */
-  
-  gl.glTexImage3D(GL3.GL_TEXTURE_3D, 0, GL.GL_LUMINANCE, resolution, resolution, resolution, 0, GL.GL_LUMINANCE, GL.GL_UNSIGNED_BYTE, textBuffer);
-   
-  
+ 
   
   // Copy vertex data to VBOs
   gl.glBindBuffer(GL.GL_ARRAY_BUFFER, posVboId);
@@ -178,6 +162,21 @@ background(255);
   gl.glBufferData(GL.GL_ARRAY_BUFFER, Float.BYTES * vertIsovalues_2.length, vertIsovaluesBuffer_2, GL.GL_DYNAMIC_DRAW);
   gl.glVertexAttribPointer(vertIsovaluesLoc_2, 4, GL.GL_FLOAT, false, 4 * Float.BYTES, 0);
 
+
+  gl.glEnable(GL3.GL_TEXTURE_3D); 
+  gl.glUniform1i(textLoc, 0);
+  gl.glActiveTexture(GL.GL_TEXTURE0);
+
+  gl.glBindTexture(GL3.GL_TEXTURE_3D, textureId);
+  gl.glTexParameteri(GL3.GL_TEXTURE_3D, GL3.GL_TEXTURE_MIN_FILTER, GL3.GL_LINEAR);
+  gl.glTexParameteri(GL3.GL_TEXTURE_3D, GL3.GL_TEXTURE_MAG_FILTER, GL3.GL_LINEAR);
+  gl.glTexParameteri(GL3.GL_TEXTURE_3D, GL3.GL_TEXTURE_WRAP_S, GL3.GL_CLAMP_TO_EDGE);
+  gl.glTexParameteri(GL3.GL_TEXTURE_3D, GL3.GL_TEXTURE_WRAP_T, GL3.GL_CLAMP_TO_EDGE);
+  gl.glTexParameteri(GL3.GL_TEXTURE_3D, GL3.GL_TEXTURE_WRAP_R, GL3.GL_CLAMP_TO_EDGE);
+
+  gl.glTexImage3D(GL3.GL_TEXTURE_3D, 0, GL.GL_LUMINANCE, resolution, resolution, resolution, 0, GL.GL_LUMINANCE, GL.GL_UNSIGNED_BYTE, textBuffer);
+   
+  gl.glBindTexture(GL3.GL_TEXTURE_3D, 0);
   gl.glDrawArrays(PGL.POINTS, 0, positions.length/4);
 
   gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
