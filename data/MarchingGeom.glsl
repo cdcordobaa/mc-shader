@@ -155,9 +155,13 @@ float getIsovalue(int index){
             return VertexIn[0].vertIsovalues_2[index%4];
 }
 
+vec3 vertexInterp(const float isolevel, vec3 v0, float l0, vec3 v1, float l1){ 
+  return mix(v0, v1, (isolevel-l0)/(l1-l0)); 
+}
+
  void main() {
    
-  float isolevel = 0;
+  float isolevel = 0.05;
   int cubeindex = 0;
   if (getIsovalue(0) < isolevel) cubeindex |= 1;
   if (getIsovalue(1) < isolevel) cubeindex |= 2;
@@ -182,43 +186,58 @@ float getIsovalue(int index){
   voxelVertices[7] = vec3(0.0, 1.0, 1.0);
 
 
-  if ( (edgeTable[cubeindex] & 1) !=0 )
+  //if ( (edgeTable[cubeindex] & 1) !=0 )
         vertlist[0] =  midPoint(voxelVertices[0], voxelVertices[1]);
 
-  if ( (edgeTable[cubeindex] & 2) !=0 )
+  //if ( (edgeTable[cubeindex] & 2) !=0 )
         vertlist[1] =  midPoint(voxelVertices[1], voxelVertices[2]);
 
-  if ( (edgeTable[cubeindex] & 4) !=0 )
+  //if ( (edgeTable[cubeindex] & 4) !=0 )
         vertlist[2] =  midPoint(voxelVertices[2], voxelVertices[3]);
 
-  if ( (edgeTable[cubeindex] & 8) !=0 )
+  //if ( (edgeTable[cubeindex] & 8) !=0 )
         vertlist[3] =  midPoint(voxelVertices[3], voxelVertices[0]);
 
 
-  if ( (edgeTable[cubeindex] & 16) !=0 )
+  //if ( (edgeTable[cubeindex] & 16) !=0 )
         vertlist[4] =  midPoint(voxelVertices[4], voxelVertices[5]);
 
-  if ( (edgeTable[cubeindex] & 32) !=0 )
+  //if ( (edgeTable[cubeindex] & 32) !=0 )
         vertlist[5] =  midPoint(voxelVertices[5], voxelVertices[6]);
 
-  if ( (edgeTable[cubeindex] & 64) !=0 )
+  //if ( (edgeTable[cubeindex] & 64) !=0 )
         vertlist[6] =  midPoint(voxelVertices[6], voxelVertices[7]);
 
-  if ( (edgeTable[cubeindex] & 128) !=0 )
+  //if ( (edgeTable[cubeindex] & 128) !=0 )
         vertlist[7] =  midPoint(voxelVertices[7], voxelVertices[4]);
 
   
-  if ( (edgeTable[cubeindex] & 256) !=0 )
+  //if ( (edgeTable[cubeindex] & 256) !=0 )
         vertlist[8] =  midPoint(voxelVertices[0], voxelVertices[4]);
 
-  if ( (edgeTable[cubeindex] & 512) !=0 )
+  //if ( (edgeTable[cubeindex] & 512) !=0 )
         vertlist[9] =  midPoint(voxelVertices[1], voxelVertices[5]);
 
-  if ( (edgeTable[cubeindex] & 1024) !=0 )
+  //if ( (edgeTable[cubeindex] & 1024) !=0 )
         vertlist[10] =  midPoint(voxelVertices[2], voxelVertices[6]);
 
-  if ( (edgeTable[cubeindex] & 2048) !=0 )
+  //if ( (edgeTable[cubeindex] & 2048) !=0 )
         vertlist[11] =  midPoint(voxelVertices[3], voxelVertices[7]);
+        
+/* 
+vertlist[0] =  vertexInterp(isolevel, voxelVertices[0], getIsovalue(0), voxelVertices[1], getIsovalue(1));
+vertlist[1] =  vertexInterp(isolevel, voxelVertices[1], getIsovalue(1), voxelVertices[2], getIsovalue(2));
+vertlist[2] =  vertexInterp(isolevel, voxelVertices[2], getIsovalue(2), voxelVertices[3], getIsovalue(3));
+vertlist[3] =  vertexInterp(isolevel, voxelVertices[3], getIsovalue(3), voxelVertices[0], getIsovalue(0));
+vertlist[4] =  vertexInterp(isolevel, voxelVertices[4], getIsovalue(4), voxelVertices[5], getIsovalue(5));
+vertlist[5] =  vertexInterp(isolevel, voxelVertices[5], getIsovalue(5), voxelVertices[6], getIsovalue(6));
+vertlist[6] =  vertexInterp(isolevel, voxelVertices[6], getIsovalue(6), voxelVertices[7], getIsovalue(7));
+vertlist[7] =  vertexInterp(isolevel, voxelVertices[7], getIsovalue(7), voxelVertices[4], getIsovalue(4));  
+vertlist[8] =  vertexInterp(isolevel, voxelVertices[0], getIsovalue(0), voxelVertices[4], getIsovalue(4));
+vertlist[9] =  vertexInterp(isolevel, voxelVertices[1], getIsovalue(1), voxelVertices[5], getIsovalue(5));
+vertlist[10] =  vertexInterp(isolevel, voxelVertices[2], getIsovalue(2), voxelVertices[6], getIsovalue(6));
+vertlist[11] =  vertexInterp(isolevel, voxelVertices[3], getIsovalue(3), voxelVertices[7], getIsovalue(7));
+ */
 
   renderCase(cubeindex, vertlist);
 

@@ -60,8 +60,10 @@ void mapVBOIsovalues(int resolution){
 }
 
 float getVertIsovalue(float x, float y, float z){
-    float val = isoFunction(x,y,z);    
+    float val = isoFunction(x,y,z);
+    val = pointsCloudIsovalue(x,y,z);    
     return val;
+
 }
 float getVertIsovalue(int index){
     PVector pos = getPositionAtIndex(index);
@@ -97,7 +99,18 @@ float getIsoValueAtIJK(int i, int j, int k, int resolution){
 }
 
 float isoFunction(float x, float y, float z){
-        return pow(x, 2) + pow(y, 2) + pow(z, 2) - 100;
+        return pow(x, 2) + pow(y, 2) - pow(z, 2) - 50;
+}
+
+float pointsCloudIsovalue(float x, float y, float z){
+
+    float isoValue = 0;
+    float weight = 1.0f;
+    for(int i = 0; i < pCloud.length; i++){
+        float dist = max(1.0f, pCloud[i].dist(new PVector(x,y,z)));
+        isoValue += (1.0f /  pow(dist,2))*weight;
+    }
+    return isoValue;
 }
 
 

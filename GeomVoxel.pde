@@ -11,13 +11,14 @@ PJOGL pgl;
 GL3 gl;
 
 static int stride = 4;
-int resolution = 25;
+int resolution = 50;
 float a;
 
 
 ArrayList<VBO> VBOlist = new ArrayList<VBO>();
 VBO colorsVBO, positionsVBO, vertIsovaluesBVO_1, vertIsovaluesBVO_2;
 float isoValuesArray[];
+PVector[] pCloud;
 
 void settings() {
   size(1400, 700, P3D);
@@ -28,6 +29,7 @@ void setup(){
   
   int size = int(resolution*resolution*resolution) *4;
   isoValuesArray = new float[(resolution+1)*(resolution+1)*(resolution+1)];
+  pCloud = randomPoints(20, -20, 20);
 
   shaderMC = new GeometryShader(this, "PassthrouVert.glsl", "MarchingGeom.glsl", "SimpleFrag.glsl");
   shader(shaderMC);
@@ -48,11 +50,13 @@ void setup(){
   VBOlist.add(vertIsovaluesBVO_1);
   VBOlist.add(vertIsovaluesBVO_2);
   updateData();
+  //printArray(pCloud);
+  //printArray(isoValuesArray);
 }
 
 void updateData(){
-  float delta =  generateVBOsData(resolution, -10, 10);
-  fillIsovaluesArray(resolution, -10, delta);
+  float delta =  generateVBOsData(resolution, -30, 30);
+  fillIsovaluesArray(resolution, -30, delta);
   mapVBOIsovalues(resolution);
   shaderMC.set("size", delta);  
   for(VBO vbo: VBOlist)
@@ -60,19 +64,17 @@ void updateData(){
 }
 
 void draw(){
-
-background(255);
-
+  background(255);
   // Geometry transformations from Processing are automatically passed to the shader
   // as long as the uniforms in the shader have the right names.
+
   translate(width/2, height/2);
   rotateX(a);
-  rotateY(a*2);  
-  scale(15); 
-
-  glBlock();  
-
+  //rotateY(a*2);  
+  scale(5);
+  glBlock();
   a += 0.01;
+  println(frameRate);
 }
 
 
@@ -80,7 +82,6 @@ void glBlock(){
   pgl = (PJOGL) beginPGL();  
   gl = pgl.gl.getGL4();    
   shaderMC.bind();
-
     for(VBO vbo: VBOlist)
       vbo.enableVertAttrib(gl,stride);
 
@@ -88,7 +89,19 @@ void glBlock(){
 
     for(VBO vbo: VBOlist)
       vbo.disableVertAttrib(gl);
-
+      
   shaderMC.unbind();
   endPGL();
+}
+
+PVector[] randomPoints(int numPoints, float min, float max){
+
+  PVector[] pointsCloud = new PVector[numPoints];
+  for(int i=0; i<numPoints; i++){
+      float xr=random(min,max);
+      float yr=random(min,max);
+      float zr=random(min,max);            
+      pointsCloud[i] = new PVector( xr, yr, zr );
+  }  
+  return pointsCloud;
 }
