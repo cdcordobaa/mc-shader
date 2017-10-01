@@ -10,38 +10,29 @@ PShader shaderMC;
 PJOGL pgl;
 GL3 gl;
 
-float[] positions;
-float[] colors;
-float[] vertIsovalues_1;
-float[] vertIsovalues_2;
-
+static int stride = 4;
+int resolution = 25;
 float a;
-ArrayList<VBO> VBOlist = new ArrayList<VBO>();
-int resolution = 20;
-VBO posvbo, colorvbo, vert1vbo, vert2vbo;
 
+
+ArrayList<VBO> VBOlist = new ArrayList<VBO>();
 VBO colorsVBO, positionsVBO, vertIsovaluesBVO_1, vertIsovaluesBVO_2;
 float isoValuesArray[];
 
 void settings() {
   size(1400, 700, P3D);
-  PJOGL.profile = 4;
+  PJOGL.profile = 3;
 }
 
 void setup(){
-
   
   int size = int(resolution*resolution*resolution) *4;
- 
-
   isoValuesArray = new float[(resolution+1)*(resolution+1)*(resolution+1)];
 
-  shaderMC = new GeometryShader(this, "PassthrouVert.glsl", "TestGeom.glsl", "SimpleFrag.glsl");
+  shaderMC = new GeometryShader(this, "PassthrouVert.glsl", "MarchingGeom.glsl", "SimpleFrag.glsl");
   shader(shaderMC);
-
   pgl = (PJOGL) beginPGL();
-  gl = pgl.gl.getGL4();
-
+  gl = pgl.gl.getGL3();
   shaderMC.bind();
 
   positionsVBO = new VBO(gl, size, shaderMC.glProgram, "position");
@@ -49,31 +40,23 @@ void setup(){
   vertIsovaluesBVO_1 = new VBO(gl, size, shaderMC.glProgram, "vertIsovalues_1");
   vertIsovaluesBVO_2 = new VBO(gl, size, shaderMC.glProgram, "vertIsovalues_2");
 
-
- 
   shaderMC.unbind();
-
   endPGL();
 
-  
-
-foo();
-  
-  
-  
+  VBOlist.add(positionsVBO);
+  VBOlist.add(colorsVBO);
+  VBOlist.add(vertIsovaluesBVO_1);
+  VBOlist.add(vertIsovaluesBVO_2);
+  updateData();
 }
 
-void foo(){
+void updateData(){
   float delta =  generateVBOsData(resolution, -10, 10);
   fillIsovaluesArray(resolution, -10, delta);
   mapVBOIsovalues(resolution);
-
-  
-  positionsVBO.updateBuffer();
-  colorsVBO.updateBuffer();
-  vertIsovaluesBVO_1.updateBuffer();
-  vertIsovaluesBVO_2.updateBuffer();
-  printArray(isoValuesArray);
+  shaderMC.set("size", delta);  
+  for(VBO vbo: VBOlist)
+    vbo.updateBuffer();
 }
 
 void draw(){
@@ -85,33 +68,27 @@ background(255);
   translate(width/2, height/2);
   rotateX(a);
   rotateY(a*2);  
-  scale(10);
- 
+  scale(15); 
 
-  pgl = (PJOGL) beginPGL();  
-  gl = pgl.gl.getGL4();
-
-  shaderMC.bind();
-  
-  
-
-
-  positionsVBO.enableVertAttrib(gl,4);
-  colorsVBO.enableVertAttrib(gl,4);
-  vertIsovaluesBVO_1.enableVertAttrib(gl,4);
-  vertIsovaluesBVO_2.enableVertAttrib(gl,4);
-
-
-  gl.glDrawArrays(PGL.POINTS, 0, positionsVBO.data.length);
-
-
-
-
-  shaderMC.unbind();
-
-  endPGL();
+  glBlock();  
 
   a += 0.01;
-  
+}
 
+
+void glBlock(){
+  pgl = (PJOGL) beginPGL();  
+  gl = pgl.gl.getGL4();    
+  shaderMC.bind();
+
+    for(VBO vbo: VBOlist)
+      vbo.enableVertAttrib(gl,stride);
+
+    gl.glDrawArrays(PGL.POINTS, 0, positionsVBO.data.length);
+
+    for(VBO vbo: VBOlist)
+      vbo.disableVertAttrib(gl);
+
+  shaderMC.unbind();
+  endPGL();
 }

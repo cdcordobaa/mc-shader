@@ -6,6 +6,7 @@ layout (triangle_strip, max_vertices = 128) out;
 uniform mat4 transformMatrix;
 uniform mat4 modelviewMatrix;
 uniform mat3 normalMatrix;
+uniform float size;
 
 //light
 const vec3 lightDirection = normalize(vec3(0.4, -10, 0.8));
@@ -21,8 +22,6 @@ out FragData {
   vec4 color;
 } FragOut;
  
-float size = 1.0;
-
 int edgeTable[256] = {
   0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
   0x80c, 0x905, 0xa0f, 0xb06, 0xc0a, 0xd03, 0xe09, 0xf00,
@@ -168,17 +167,6 @@ float getIsovalue(int index){
   if (getIsovalue(5) < isolevel) cubeindex |= 32;
   if (getIsovalue(6) < isolevel) cubeindex |= 64;
   if (getIsovalue(7) < isolevel) cubeindex |= 128;
-
-/*   cubeindex = int(getIsovalue(0) < isolevel); 
-  cubeindex += int(getIsovalue(1) < isolevel)<<1; 
-  cubeindex += int(getIsovalue(2) < isolevel)<<2; 
-  cubeindex += int(getIsovalue(3) < isolevel)<<3; 
-  cubeindex += int(getIsovalue(4) < isolevel)<<4; 
-  cubeindex += int(getIsovalue(5) < isolevel)<<5; 
-  cubeindex += int(getIsovalue(6) < isolevel)<<6; 
-  cubeindex += int(getIsovalue(7) < isolevel)<<7;  */
-
- //cubeindex = 3;
     
   vec3 voxelVertices[8];
   vec3 vertlist[12]; 
