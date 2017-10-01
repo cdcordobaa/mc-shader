@@ -178,7 +178,7 @@ float getIsovalue(int index){
   cubeindex += int(getIsovalue(6) < isolevel)<<6; 
   cubeindex += int(getIsovalue(7) < isolevel)<<7;  */
 
-      //cubeindex = 9;
+ //cubeindex = 3;
     
   vec3 voxelVertices[8];
   vec3 vertlist[12]; 

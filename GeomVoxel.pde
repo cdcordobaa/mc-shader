@@ -6,47 +6,22 @@ import java.nio.IntBuffer;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL3;
 
-import peasy.*;
-PeasyCam cam;
-
 PShader shaderMC;
-
 PJOGL pgl;
 GL3 gl;
 
 float[] positions;
 float[] colors;
-int[] indices;
-
 float[] vertIsovalues_1;
 float[] vertIsovalues_2;
 
 float a;
-
 ArrayList<VBO> VBOlist = new ArrayList<VBO>();
-
-FloatBuffer posBuffer;
-FloatBuffer colorBuffer;
-IntBuffer indexBuffer;
-
-FloatBuffer vertIsovaluesBuffer_1;
-FloatBuffer vertIsovaluesBuffer_2;
-
-int posVboId;
-int colorVboId;
-int indexVboId;
-int vertIsovaluesVboId_1;
-int vertIsovaluesVboId_2;
-
-
-int posLoc; 
-int colorLoc;
-int vertIsovaluesLoc_1;
-int vertIsovaluesLoc_2;
-
-
 int resolution = 20;
 VBO posvbo, colorvbo, vert1vbo, vert2vbo;
+
+VBO colorsVBO, positionsVBO, vertIsovaluesBVO_1, vertIsovaluesBVO_2;
+float isoValuesArray[];
 
 void settings() {
   size(1400, 700, P3D);
@@ -56,11 +31,10 @@ void settings() {
 void setup(){
 
   
-  int size = int(pow(resolution, 3)*4);
-  positions = new float[size];  
-  colors = new float[size];
-  vertIsovalues_1 = new float[size];
-  vertIsovalues_2 = new float[size];
+  int size = int(resolution*resolution*resolution) *4;
+ 
+
+  isoValuesArray = new float[(resolution+1)*(resolution+1)*(resolution+1)];
 
   shaderMC = new GeometryShader(this, "PassthrouVert.glsl", "TestGeom.glsl", "SimpleFrag.glsl");
   shader(shaderMC);
@@ -70,16 +44,36 @@ void setup(){
 
   shaderMC.bind();
 
-  posvbo = new VBO(gl, positions, shaderMC.glProgram, "position");
-  colorvbo = new VBO(gl, colors, shaderMC.glProgram, "color");
-  vert1vbo = new VBO(gl, vertIsovalues_1, shaderMC.glProgram, "vertIsovalues_1");
-  vert2vbo = new VBO(gl, vertIsovalues_2, shaderMC.glProgram, "vertIsovalues_2");
+  positionsVBO = new VBO(gl, size, shaderMC.glProgram, "position");
+  colorsVBO = new VBO(gl, size, shaderMC.glProgram, "color");
+  vertIsovaluesBVO_1 = new VBO(gl, size, shaderMC.glProgram, "vertIsovalues_1");
+  vertIsovaluesBVO_2 = new VBO(gl, size, shaderMC.glProgram, "vertIsovalues_2");
 
+
+ 
   shaderMC.unbind();
 
   endPGL();
 
-  updateGeometry();
+  
+
+foo();
+  
+  
+  
+}
+
+void foo(){
+  float delta =  generateVBOsData(resolution, -10, 10);
+  fillIsovaluesArray(resolution, -10, delta);
+  mapVBOIsovalues(resolution);
+
+  
+  positionsVBO.updateBuffer();
+  colorsVBO.updateBuffer();
+  vertIsovaluesBVO_1.updateBuffer();
+  vertIsovaluesBVO_2.updateBuffer();
+  printArray(isoValuesArray);
 }
 
 void draw(){
@@ -100,16 +94,16 @@ background(255);
   shaderMC.bind();
   
   
-  posvbo.bindToShader(gl,positions.length,4);
-  colorvbo.bindToShader(gl,positions.length,4);
-  vert1vbo.bindToShader(gl,positions.length,4);
-  vert2vbo.bindToShader(gl,positions.length,4);
 
-  gl.glDrawArrays(PGL.POINTS, 0, positions.length);
 
-  gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
+  positionsVBO.enableVertAttrib(gl,4);
+  colorsVBO.enableVertAttrib(gl,4);
+  vertIsovaluesBVO_1.enableVertAttrib(gl,4);
+  vertIsovaluesBVO_2.enableVertAttrib(gl,4);
 
-  gl.glDisableVertexAttribArray(vert1vbo.glDataLoc);
+
+  gl.glDrawArrays(PGL.POINTS, 0, positionsVBO.data.length);
+
 
 
 

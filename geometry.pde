@@ -1,85 +1,4 @@
-void updateGeometry(){
- 
-
-  
-  float axisMin = -10;
-  float axisMax =  10;
-  float axisRange = axisMax - axisMin;
-  float delta = axisRange/(resolution);
-  float x, y, z;
-
-   for(int k=0; k< resolution; k++){
-
-      for(int j=0; j< resolution; j++){
-
-            for(int i=0; i< resolution; i++){
-                x = ((delta*i)+axisMin);
-                y = ((delta*j)+axisMin);
-                z = ((delta*k)+axisMin);
-                int index = i + (j*resolution) + (k*resolution*resolution);
-
-                
-                index *= 4;
-                positions[index  ] = x;
-                positions[index+1] = y;
-                positions[index+2] = z;
-                positions[index+3] = 1.0f;
-
-                colors[index  ] = x*y;
-                colors[index+1] = y*z;
-                colors[index+2] = z;
-                colors[index+3] = 1.0f;
-
-                vertIsovalues_1[index  ] = x*y;
-                vertIsovalues_1[index+1] = y*z;
-                vertIsovalues_1[index+2] = z;
-                vertIsovalues_1[index+3] = 1.0f;
-
-                float s = delta; 
-                vertIsovalues_1[index  ] = isoFunction(x  , y  , z  );
-                vertIsovalues_1[index+1] = isoFunction(x+s, y  , z  );
-                vertIsovalues_1[index+2] = isoFunction(x+s, y+s, z  );
-                vertIsovalues_1[index+3] = isoFunction(x  , y+s, z  );
-
-                vertIsovalues_2[index  ] = isoFunction(x  , y  , z+s);
-                vertIsovalues_2[index+1] = isoFunction(x+s, y  , z+s);
-                vertIsovalues_2[index+2] = isoFunction(x+s, y+s, z+s);
-                vertIsovalues_2[index+3] = isoFunction(x  , y+s, z+s);
-            }
-        }
-    }
-    
-/*     posBuffer.rewind();
-    posBuffer.put(positions);
-    posBuffer.rewind();
-
-    colorBuffer.rewind();
-    colorBuffer.put(colors);
-    colorBuffer.rewind();
-
-    vertIsovaluesBuffer_1.rewind();
-    vertIsovaluesBuffer_1.put(vertIsovalues_1);
-    vertIsovaluesBuffer_1.rewind();
-
-    vertIsovaluesBuffer_2.rewind();
-    vertIsovaluesBuffer_2.put(vertIsovalues_2);
-    vertIsovaluesBuffer_2.rewind(); */
-
-    posvbo.updateBuffer(positions);
-    colorvbo.updateBuffer(positions);
-    vert1vbo.updateBuffer(vertIsovalues_1);
-    vert2vbo.updateBuffer(vertIsovalues_2);
-
-
-    printArray(positions);
-
-}
-
-float isoFunction(float x, float y, float z){
-        return pow(x, 2) + pow(y, 2) + pow(z, 2) - 100;
-}
-
-void generatePositionsArray(int resolution, float axisMin, float axisMax){
+float generateVBOsData(int resolution, float axisMin, float axisMax){
 
     float axisRange = axisMax - axisMin;
     float delta = axisRange/(resolution);
@@ -96,37 +15,89 @@ void generatePositionsArray(int resolution, float axisMin, float axisMax){
                 
                 setPositionAtIndex(index, x, y, z);
                 setColorAtIndex(index, x, y, z);
-                
+
+                               
+            }
+        }
+    }
+    return delta;
+}
+
+void fillIsovaluesArray(int resolution, float min, float delta){
+    float x, y, z;
+    int index;
+    for(int k=0; k< resolution+1; k++){
+        for(int j=0; j< resolution+1; j++){
+            for(int i=0; i< resolution+1; i++){
+                x = ((delta*i)+min);
+                y = ((delta*j)+min);
+                z = ((delta*k)+min);
+                index = i + (j*resolution) + (k*resolution*resolution);
+                isoValuesArray[index] = getVertIsovalue(x, y, z);
             }
         }
     }
 }
 
-void setColorAtIndex(int index, float x, float y, float z){
-    index*=4;
-    colors[index  ] = x*y;
-    colors[index+1] = y*z;
-    colors[index+2] = z;
-    colors[index+3] = 1.0f;
+void mapVBOIsovalues(int resolution){
+    int index;
+    for(int k=0; k< resolution; k++){
+        for(int j=0; j< resolution; j++){
+            for(int i=0; i< resolution; i++){
+                index = i + (j*resolution) + (k*resolution*resolution);                
+                vertIsovaluesBVO_1.data[index*4  ] = getIsoValueAtIJK(i  , j  , k  , resolution);
+                vertIsovaluesBVO_1.data[index*4+1] = getIsoValueAtIJK(i+1, j  , k  , resolution);
+                vertIsovaluesBVO_1.data[index*4+2] = getIsoValueAtIJK(i+1, j+1, k  , resolution);
+                vertIsovaluesBVO_1.data[index*4+3] = getIsoValueAtIJK(i  , j+1, k  , resolution);
+
+                vertIsovaluesBVO_2.data[index*4  ] = getIsoValueAtIJK(i  , j  , k+1, resolution);
+                vertIsovaluesBVO_2.data[index*4+1] = getIsoValueAtIJK(i+1, j  , k+1, resolution);
+                vertIsovaluesBVO_2.data[index*4+2] = getIsoValueAtIJK(i+1, j+1, k+1, resolution);
+                vertIsovaluesBVO_2.data[index*4+3] = getIsoValueAtIJK(i  , j+1, k+1, resolution);
+            }
+        }
+    }
 }
 
+float getVertIsovalue(float x, float y, float z){
+    float val = isoFunction(x,y,z);    
+    return val;
+}
+float getVertIsovalue(int index){
+    PVector pos = getPositionAtIndex(index);
+    float val = isoFunction(pos.x, pos.y, pos.z);
+    return val;
+}
+
+void setColorAtIndex(int index, float x, float y, float z){
+    index*=4;
+    colorsVBO.data[index  ] = x*y;
+    colorsVBO.data[index+1] = y*z;
+    colorsVBO.data[index+2] = z;
+    colorsVBO.data[index+3] = 1.0f;
+}
 
 void setPositionAtIndex(int index, float x, float y, float z){
     index*=4;
-    positions[index  ] = x;
-    positions[index+1] = y;
-    positions[index+2] = z;
-    positions[index+3] = 1.0f;
+    positionsVBO.data[index  ] = x;
+    positionsVBO.data[index+1] = y;
+    positionsVBO.data[index+2] = z;
+    positionsVBO.data[index+3] = 1.0f;
 }
 
 PVector getPositionAtIndex(int index){
     index*=4;
-    return new PVector( positions[index  ],
-                        positions[index+1],
-                        positions[index+2]);
+    return new PVector( positionsVBO.data[index  ],
+                        positionsVBO.data[index+1],
+                        positionsVBO.data[index+2]);
 }
 
+float getIsoValueAtIJK(int i, int j, int k, int resolution){    
+    return isoValuesArray[i + (j*resolution) + (k*resolution*resolution)];
+}
 
-
+float isoFunction(float x, float y, float z){
+        return pow(x, 2) + pow(y, 2) + pow(z, 2) - 100;
+}
 
 

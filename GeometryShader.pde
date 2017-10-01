@@ -24,5 +24,4 @@ class GeometryShader extends PShader {
     pgl.attachShader(glProgram, glGeometry);
   }
 
-
 }
