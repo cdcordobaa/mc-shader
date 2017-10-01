@@ -9,7 +9,7 @@ import com.jogamp.opengl.GL3;
 import peasy.*;
 PeasyCam cam;
 
-PShader geoTestShader;
+PShader shaderMC;
 
 PJOGL pgl;
 GL3 gl;
@@ -22,6 +22,8 @@ float[] vertIsovalues_1;
 float[] vertIsovalues_2;
 
 float a;
+
+ArrayList<VBO> VBOlist = new ArrayList<VBO>();
 
 FloatBuffer posBuffer;
 FloatBuffer colorBuffer;
@@ -44,6 +46,7 @@ int vertIsovaluesLoc_2;
 
 
 int resolution = 20;
+VBO posvbo, colorvbo, vert1vbo, vert2vbo;
 
 void settings() {
   size(1400, 700, P3D);
@@ -53,52 +56,29 @@ void settings() {
 void setup(){
 
   
-  //cam = new PeasyCam(this, 100);
-  
- 
-  //positions = new float[32];
   int size = int(pow(resolution, 3)*4);
-  positions = new float[size];
-  //colors = new float[32];
+  positions = new float[size];  
   colors = new float[size];
-  //indices = new int[12];
   vertIsovalues_1 = new float[size];
   vertIsovalues_2 = new float[size];
 
-
-
-  //posBuffer = allocateDirectFloatBuffer(32);
-  posBuffer = allocateDirectFloatBuffer(size);
-  //colorBuffer = allocateDirectFloatBuffer(32);
-  colorBuffer = allocateDirectFloatBuffer(size);
-
-  vertIsovaluesBuffer_1 = allocateDirectFloatBuffer(size);
-  vertIsovaluesBuffer_2 = allocateDirectFloatBuffer(size);
-
-
-
-  geoTestShader = new GeometryShader(this, "PassthrouVert.glsl", "TestGeom.glsl", "SimpleFrag.glsl");
-  shader(geoTestShader);
+  shaderMC = new GeometryShader(this, "PassthrouVert.glsl", "TestGeom.glsl", "SimpleFrag.glsl");
+  shader(shaderMC);
 
   pgl = (PJOGL) beginPGL();
   gl = pgl.gl.getGL4();
 
-  IntBuffer intBuffer = IntBuffer.allocate(4);  
-  gl.glGenBuffers(4, intBuffer);
-  posVboId = intBuffer.get(0);
-  colorVboId = intBuffer.get(1);
-  //indexVboId = intBuffer.get(2);
-  vertIsovaluesVboId_1 = intBuffer.get(2);
-  vertIsovaluesVboId_2 = intBuffer.get(3);
+  shaderMC.bind();
 
-  geoTestShader.bind();
-  posLoc = gl.glGetAttribLocation(geoTestShader.glProgram, "position");
-  colorLoc = gl.glGetAttribLocation(geoTestShader.glProgram, "color");
-  vertIsovaluesLoc_1 = gl.glGetAttribLocation(geoTestShader.glProgram, "vertIsovalues_1");
-  vertIsovaluesLoc_2 = gl.glGetAttribLocation(geoTestShader.glProgram, "vertIsovalues_2");
-  geoTestShader.unbind();
+  posvbo = new VBO(gl, positions, shaderMC.glProgram, "position");
+  colorvbo = new VBO(gl, colors, shaderMC.glProgram, "color");
+  vert1vbo = new VBO(gl, vertIsovalues_1, shaderMC.glProgram, "vertIsovalues_1");
+  vert2vbo = new VBO(gl, vertIsovalues_2, shaderMC.glProgram, "vertIsovalues_2");
+
+  shaderMC.unbind();
 
   endPGL();
+
   updateGeometry();
 }
 
@@ -111,66 +91,33 @@ background(255);
   translate(width/2, height/2);
   rotateX(a);
   rotateY(a*2);  
-  stroke(100);
   scale(10);
-  //updateGeometry();
+ 
 
   pgl = (PJOGL) beginPGL();  
   gl = pgl.gl.getGL4();
 
-  geoTestShader.bind();
-  gl.glEnableVertexAttribArray(posLoc);
-  gl.glEnableVertexAttribArray(colorLoc);  
-  gl.glEnableVertexAttribArray(vertIsovaluesLoc_1);  
-  gl.glEnableVertexAttribArray(vertIsovaluesLoc_2);  
-
-
-
-  // Copy vertex data to VBOs
-  gl.glBindBuffer(GL.GL_ARRAY_BUFFER, posVboId);
-  gl.glBufferData(GL.GL_ARRAY_BUFFER, Float.BYTES * positions.length, posBuffer, GL.GL_DYNAMIC_DRAW);
-  gl.glVertexAttribPointer(posLoc, 4, GL.GL_FLOAT, false, 4 * Float.BYTES, 0);
-
-  gl.glBindBuffer(GL.GL_ARRAY_BUFFER, colorVboId);  
-  gl.glBufferData(GL.GL_ARRAY_BUFFER, Float.BYTES * colors.length, colorBuffer, GL.GL_DYNAMIC_DRAW);
-  gl.glVertexAttribPointer(colorLoc, 4, GL.GL_FLOAT, false, 4 * Float.BYTES, 0);
-
-  gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vertIsovaluesVboId_1);  
-  gl.glBufferData(GL.GL_ARRAY_BUFFER, Float.BYTES * vertIsovalues_1.length, vertIsovaluesBuffer_1, GL.GL_DYNAMIC_DRAW);
-  gl.glVertexAttribPointer(vertIsovaluesLoc_1, 4, GL.GL_FLOAT, false, 4 * Float.BYTES, 0);
-
-  gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vertIsovaluesVboId_2);  
-  gl.glBufferData(GL.GL_ARRAY_BUFFER, Float.BYTES * vertIsovalues_2.length, vertIsovaluesBuffer_2, GL.GL_DYNAMIC_DRAW);
-  gl.glVertexAttribPointer(vertIsovaluesLoc_2, 4, GL.GL_FLOAT, false, 4 * Float.BYTES, 0);
+  shaderMC.bind();
+  
+  
+  posvbo.bindToShader(gl,positions.length,4);
+  colorvbo.bindToShader(gl,positions.length,4);
+  vert1vbo.bindToShader(gl,positions.length,4);
+  vert2vbo.bindToShader(gl,positions.length,4);
 
   gl.glDrawArrays(PGL.POINTS, 0, positions.length);
 
   gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
 
-  // Draw the triangle elements
-  /* gl.glBindBuffer(PGL.ELEMENT_ARRAY_BUFFER, indexVboId);
-  pgl.bufferData(PGL.ELEMENT_ARRAY_BUFFER, Integer.BYTES * indices.length, indexBuffer, GL.GL_DYNAMIC_DRAW);
-  gl.glDrawElements(PGL.POINTS, indices.length, GL.GL_UNSIGNED_INT, 0);
-  gl.glBindBuffer(PGL.ELEMENT_ARRAY_BUFFER, 0);     */
+  gl.glDisableVertexAttribArray(vert1vbo.glDataLoc);
 
-  gl.glDisableVertexAttribArray(posLoc);
-  gl.glDisableVertexAttribArray(colorLoc); 
-  gl.glDisableVertexAttribArray(vertIsovaluesLoc_1); 
-  gl.glDisableVertexAttribArray(vertIsovaluesLoc_2); 
 
-  geoTestShader.unbind();
+
+  shaderMC.unbind();
 
   endPGL();
 
   a += 0.01;
   
 
-}
-
-FloatBuffer allocateDirectFloatBuffer(int n) {
-  return ByteBuffer.allocateDirect(n * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
-}
-
-IntBuffer allocateDirectIntBuffer(int n) {
-  return ByteBuffer.allocateDirect(n * Integer.BYTES).order(ByteOrder.nativeOrder()).asIntBuffer();
 }

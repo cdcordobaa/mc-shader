@@ -49,7 +49,7 @@ void updateGeometry(){
         }
     }
     
-    posBuffer.rewind();
+/*     posBuffer.rewind();
     posBuffer.put(positions);
     posBuffer.rewind();
 
@@ -63,7 +63,12 @@ void updateGeometry(){
 
     vertIsovaluesBuffer_2.rewind();
     vertIsovaluesBuffer_2.put(vertIsovalues_2);
-    vertIsovaluesBuffer_2.rewind();
+    vertIsovaluesBuffer_2.rewind(); */
+
+    posvbo.updateBuffer(positions);
+    colorvbo.updateBuffer(positions);
+    vert1vbo.updateBuffer(vertIsovalues_1);
+    vert2vbo.updateBuffer(vertIsovalues_2);
 
 
     printArray(positions);
