@@ -23,4 +23,9 @@ class GeometryShader extends PShader {
     
     pgl.attachShader(glProgram, glGeometry);
   }
+
+  void bindArraytoVBO(float[] dataArray){
+    
+  }
+
 }
