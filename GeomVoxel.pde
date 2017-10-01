@@ -76,7 +76,6 @@ void setup(){
   vertIsovaluesBuffer_2 = allocateDirectFloatBuffer(size);
 
 
-  indexBuffer = allocateDirectIntBuffer(12);
 
   geoTestShader = new GeometryShader(this, "PassthrouVert.glsl", "TestGeom.glsl", "SimpleFrag.glsl");
   shader(geoTestShader);
