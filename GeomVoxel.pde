@@ -11,7 +11,7 @@ PJOGL pgl;
 GL3 gl;
 
 static int stride = 4;
-int resolution = 50;
+int resolution = 40;
 float a;
 
 
@@ -69,8 +69,8 @@ void draw(){
   // as long as the uniforms in the shader have the right names.
 
   translate(width/2, height/2);
-  rotateX(a);
-  //rotateY(a*2);  
+  //rotateX(a);
+  rotateY(a*2);  
   scale(5);
   glBlock();
   a += 0.01;
