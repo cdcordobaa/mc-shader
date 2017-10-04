@@ -148,18 +148,21 @@ vec3 midPoint(vec3 p1, vec3 p2){
    return (p1 + p2)/2;
 }
 
-float getIsovalue(int index){
-     /*  if(index < 4)
-            return VertexIn[0].vertIsovalues_1[index];
-      else 
-            return VertexIn[0].vertIsovalues_2[index%4]; */
-      return 0;
-}
+
 
 vec3 offPos;
 float isoFunction(int i){
         offPos = gl_in[0].gl_Position.xyz + voxelVertices[i];
         return pow(offPos.x, 2) + pow(offPos.y, 2) - pow(offPos.z, 2) - 25;
+}
+
+float getIsovalue(int index){
+     /*  if(index < 4)
+            return VertexIn[0].vertIsovalues_1[index];
+      else 
+            return VertexIn[0].vertIsovalues_2[index%4]; */
+      //return 0;
+      return isoFunction(index);
 }
 
 float getIsovalue1(int index){
@@ -208,14 +211,14 @@ vec3 vertexInterp2(const float isolevel, vec3 v0, float l0, vec3 v1, float l1){
   voxelVertices[6] = vec3(1.0, 1.0, 1.0);
   voxelVertices[7] = vec3(0.0, 1.0, 1.0);
 
-  float isoval0 =getIsovalue1(0) ;
-  float isoval1 =getIsovalue1(1) ;
-  float isoval2 =getIsovalue1(2) ;
-  float isoval3 =getIsovalue1(3) ;
-  float isoval4 =getIsovalue2(4) ;
-  float isoval5 =getIsovalue2(5) ;
-  float isoval6 =getIsovalue2(6) ;
-  float isoval7 =getIsovalue2(7) ;
+  float isoval0 =getIsovalue(0) ;
+  float isoval1 =getIsovalue(1) ;
+  float isoval2 =getIsovalue(2) ;
+  float isoval3 =getIsovalue(3) ;
+  float isoval4 =getIsovalue(4) ;
+  float isoval5 =getIsovalue(5) ;
+  float isoval6 =getIsovalue(6) ;
+  float isoval7 =getIsovalue(7) ;
 
   float isolevel = 0.05;
   int cubeindex = 0;
