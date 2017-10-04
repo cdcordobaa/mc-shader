@@ -11,7 +11,7 @@ PJOGL pgl;
 GL3 gl;
 
 static int stride = 4;
-int resolution = 40;
+int resolution = 50;
 float a;
 
 
