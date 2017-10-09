@@ -11,7 +11,7 @@ PJOGL pgl;
 GL3 gl;
 
 static int stride = 4;
-int resolution = 40;
+int resolution = 50;
 float a;
 
 
@@ -26,7 +26,7 @@ void settings() {
 }
 
 void setup(){
-  
+  frameRate(1000);
   int size = int(resolution*resolution*resolution) *4;
   isoValuesArray = new float[(resolution+1)*(resolution+1)*(resolution+1)];
   pCloud = randomPoints(20, -20, 20);
@@ -85,7 +85,7 @@ void glBlock(){
     for(VBO vbo: VBOlist)
       vbo.enableVertAttrib(gl,stride);
 
-    gl.glDrawArrays(PGL.POINTS, 0, positionsVBO.data.length);
+    gl.glDrawArrays(PGL.POINTS, 0, positionsVBO.data.length/4);
 
     for(VBO vbo: VBOlist)
       vbo.disableVertAttrib(gl);
