@@ -252,6 +252,12 @@ vertlist[11] =  vertexInterp(isolevel, voxelVertices[3], getIsovalue1(3), voxelV
         vertlist[i+8] = vertexInterp(isolevel, voxelVertices[i], getIsovalue1(i), voxelVertices[i+4], getIsovalue2(i+4));
   }
 
+/*    for(int i=0; i<4; i++){
+        vertlist[i] = midPoint(voxelVertices[i], voxelVertices[(i+1)%4]);  
+        vertlist[i+4] = midPoint(voxelVertices[i+4], voxelVertices[(i+5)%4 + 4]);
+        vertlist[i+8] = midPoint(voxelVertices[i], voxelVertices[i+4]);
+  } */
+
 
   renderCase(cubeindex, vertlist);
 

@@ -26,7 +26,7 @@ void settings() {
 }
 
 void setup(){
-  
+  frameRate(1000);
   int size = int(resolution*resolution*resolution) *4;
   isoValuesArray = new float[(resolution+1)*(resolution+1)*(resolution+1)];
   pCloud = randomPoints(20, -20, 20);
