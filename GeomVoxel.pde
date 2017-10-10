@@ -11,7 +11,7 @@ PJOGL pgl;
 GL3 gl;
 
 static int stride = 4;
-int resolution = 30;
+int resolution = 10;
 float a;
 
 
@@ -79,7 +79,7 @@ void draw(){
   scale(5);
   glBlock();
   a += 0.01;
-  //println(frameRate);
+  println(frameRate);
 }
 
 

@@ -1,4 +1,4 @@
-#version 430
+#version 150
 
 in FragData {
   vec4 color;
