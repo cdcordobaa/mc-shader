@@ -74,7 +74,7 @@ void draw(){
   scale(5);
   glBlock();
   a += 0.01;
-  println(frameRate);
+  //println(frameRate);
 }
 
 
