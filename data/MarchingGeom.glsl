@@ -301,12 +301,21 @@ vertlist[11] =  vertexInterp(isolevel, voxelVertices[3], isovalue1(3), voxelVert
         vertlist[i+8] = vertexInterp(isolevel, voxelVertices[i], isovalue1[i], voxelVertices[i+4], isovalue2[i]);
   }
 
+<<<<<<< HEAD
  /*    for(int i=0; i<4; i++){
         vertlist[i] = vertlist[i] - vertlist[i] + midPoint(voxelVertices[i], voxelVertices[(i+1)%4]);  
         vertlist[i+4] = midPoint(voxelVertices[i+4], voxelVertices[(i+5)%4 + 4]);
         vertlist[i+8] = midPoint(voxelVertices[i], voxelVertices[i+4]);
   }  */
  
+=======
+/*    for(int i=0; i<4; i++){
+        vertlist[i] = midPoint(voxelVertices[i], voxelVertices[(i+1)%4]);  
+        vertlist[i+4] = midPoint(voxelVertices[i+4], voxelVertices[(i+5)%4 + 4]);
+        vertlist[i+8] = midPoint(voxelVertices[i], voxelVertices[i+4]);
+  } */
+
+>>>>>>> b56438fb6bcca74867c6eaee150aedd07fe98533
 
   renderCase(cubeindex, vertlist);
 

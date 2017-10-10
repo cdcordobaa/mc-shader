@@ -61,7 +61,7 @@ void mapVBOIsovalues(int resolution){
 
 float getVertIsovalue(float x, float y, float z){
     float val = isoFunction(x,y,z);
-    val = pointsCloudIsovalue(x,y,z);    
+    //val = pointsCloudIsovalue(x,y,z);    
     return val;
 
 }
