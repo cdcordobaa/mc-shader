@@ -67,7 +67,8 @@ class VBO{
     void printInfo(){
         println("VBO(id: "+glVBOId+", name: "+glAttribName+", alloc: "+glDataLoc+")");        
         //println("VBO size: "  + data.length);
-        //println("VBO DATA[]: ");
+        println("VBO DATA[]: ");
+        //printArray( data );
     }
     FloatBuffer allocateDirectFloatBuffer(int n) {
     return ByteBuffer.allocateDirect(n * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();

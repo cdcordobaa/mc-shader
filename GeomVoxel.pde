@@ -11,7 +11,7 @@ PJOGL pgl;
 GL3 gl;
 
 static int stride = 4;
-int resolution = 50;
+int resolution = 30;
 float a;
 
 
@@ -29,7 +29,7 @@ void setup(){
   frameRate(1000);
   int size = int(resolution*resolution*resolution) *4;
   isoValuesArray = new float[(resolution+1)*(resolution+1)*(resolution+1)];
-  pCloud = randomPoints(20, -20, 20);
+  pCloud = randomPoints(1, -20, 20);
 
   shaderMC = new GeometryShader(this, "PassthrouVert.glsl", "MarchingGeom.glsl", "SimpleFrag.glsl");
   shader(shaderMC);
@@ -59,8 +59,13 @@ void updateData(){
   fillIsovaluesArray(resolution, -30, delta);
   mapVBOIsovalues(resolution);
   shaderMC.set("size", delta);  
-  for(VBO vbo: VBOlist)
+  for(VBO vbo: VBOlist){
+
     vbo.updateBuffer();
+    println("data");
+    //printArray(vbo.data);
+  }
+    
 }
 
 void draw(){
