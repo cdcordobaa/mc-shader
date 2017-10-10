@@ -420,28 +420,77 @@ float getIsovalue(int index){
 }
 
 float getIsovalue1(int index){
-            return VertexIn[0].vertIsovalues_1[index];
+            return 0;
+            //return VertexIn[0].vertIsovalues_1[index];
 }
 float getIsovalue2(int index){
-            return VertexIn[0].vertIsovalues_2[index%4];
+            return 1;
+            //return VertexIn[0].vertIsovalues_2[index%4];
 }
 
-vec3 vertexInterp(const float isolevel, vec3 v0, float l0, vec3 v1, float l1){ 
-  return mix(v0, v1, (isolevel-l0)/(l1-l0)); 
+vec3 vertexInterp(const float isolevel, vec3 v0, float l0, vec3 v1, float l1){
+      //return vec3(0);
+      //return v0*l0+v1*l1 ;
+      //if(l1-l0)
+
+
+
+// return mix(v0, v1, (isolevel-l0)/(l1-l0));
+ //return mix(v0, v1, 0.5 + (-0.00002)/(0.00001) - (-0.00002)/(0.00001)); 
+ //float f = (isolevel-l0)/(l1-l0);
+//f = (-0.00002)/(0.00001);
+//f = (isolevel - l0)/ 0.5;
+//FragOut.color = vec4(f,0,0,1);
+ //return mix(v0, v1, f);
+
+float f = (isolevel-l0)/(l1-l0);
+return v0*(1-f) + v1*f;
+FragOut.color = vec4(f,0,0,1);
+//return v0 * (1−f) + v1 * f;
+
 }
+
+
+
+vec3 vertexInterp2(const float isolevel, vec3 v0, float l0, vec3 v1, float l1){ 
+      float mu;
+      vec3 p = vec3(0,0,0);
+ 
+      if (abs(isolevel-l0) < 0.1)
+      return(v0);
+      if (abs(isolevel-l1) < 0.1)
+      return(v1);
+      if (abs(l0-l1) < 0.1)
+      return(v0);
+ 
+      mu = (isolevel - l0) / (l1 - l0);
+      p.x = v0.x + mu * (v1.x - v0.x);
+      p.y = v0.y + mu * (v1.y - v0.y);
+      p.z = v0.z + mu * (v1.z - v0.z);
+
+      return(p);
+}
+
+
 
  void main() {
    
   float isolevel = 0.05;
   int cubeindex = 0;
-  if (getIsovalue1(0) < isolevel) cubeindex |= 1;
-  if (getIsovalue1(1) < isolevel) cubeindex |= 2;
-  if (getIsovalue1(2) < isolevel) cubeindex |= 4;
-  if (getIsovalue1(3) < isolevel) cubeindex |= 8;
-  if (getIsovalue2(4) < isolevel) cubeindex |= 16;
-  if (getIsovalue2(5) < isolevel) cubeindex |= 32;
-  if (getIsovalue2(6) < isolevel) cubeindex |= 64;
-  if (getIsovalue2(7) < isolevel) cubeindex |= 128;
+
+  vec4 isovalue1 = /*vec4(0,0,0,0);*/ vec4(VertexIn[0].vertIsovalues_1);
+  vec4 isovalue2 = /*vec4(1);*/ vec4(VertexIn[0].vertIsovalues_2);
+  
+  if (isovalue1[0] < isolevel) cubeindex |= 1;
+  if (isovalue1[1] < isolevel) cubeindex |= 2;
+  if (isovalue1[2] < isolevel) cubeindex |= 4;
+  if (isovalue1[3] < isolevel) cubeindex |= 8;
+  if (isovalue2[0] < isolevel) cubeindex |= 16;
+  if (isovalue2[1] < isolevel) cubeindex |= 32;
+  if (isovalue2[2] < isolevel) cubeindex |= 64;
+  if (isovalue2[3] < isolevel) cubeindex |= 128;
+
+  //cubeindex = 172;
     
   vec3 voxelVertices[8];
   vec3 vertlist[12]; 
@@ -497,26 +546,41 @@ vec3 vertexInterp(const float isolevel, vec3 v0, float l0, vec3 v1, float l1){
 
         
 /* 
-vertlist[0] =  vertexInterp(isolevel, voxelVertices[0], getIsovalue1(0), voxelVertices[1], getIsovalue1(1));
-vertlist[1] =  vertexInterp(isolevel, voxelVertices[1], getIsovalue1(1), voxelVertices[2], getIsovalue1(2));
-vertlist[2] =  vertexInterp(isolevel, voxelVertices[2], getIsovalue1(2), voxelVertices[3], getIsovalue1(3));
-vertlist[3] =  vertexInterp(isolevel, voxelVertices[3], getIsovalue1(3), voxelVertices[0], getIsovalue1(0));
-vertlist[4] =  vertexInterp(isolevel, voxelVertices[4], getIsovalue2(4), voxelVertices[5], getIsovalue2(5));
-vertlist[5] =  vertexInterp(isolevel, voxelVertices[5], getIsovalue2(5), voxelVertices[6], getIsovalue2(6));
-vertlist[6] =  vertexInterp(isolevel, voxelVertices[6], getIsovalue2(6), voxelVertices[7], getIsovalue2(7));
-vertlist[7] =  vertexInterp(isolevel, voxelVertices[7], getIsovalue2(7), voxelVertices[4], getIsovalue2(4));  
-vertlist[8] =  vertexInterp(isolevel, voxelVertices[0], getIsovalue1(0), voxelVertices[4], getIsovalue2(4));
-vertlist[9] =  vertexInterp(isolevel, voxelVertices[1], getIsovalue1(1), voxelVertices[5], getIsovalue2(5));
-vertlist[10] =  vertexInterp(isolevel, voxelVertices[2], getIsovalue1(2), voxelVertices[6], getIsovalue2(6));
-vertlist[11] =  vertexInterp(isolevel, voxelVertices[3], getIsovalue1(3), voxelVertices[7], getIsovalue2(7));
+vertlist[0] =  vertexInterp(isolevel, voxelVertices[0], isovalue1(0), voxelVertices[1], isovalue1(1));
+vertlist[1] =  vertexInterp(isolevel, voxelVertices[1], isovalue1(1), voxelVertices[2], isovalue1(2));
+vertlist[2] =  vertexInterp(isolevel, voxelVertices[2], isovalue1(2), voxelVertices[3], isovalue1(3));
+vertlist[3] =  vertexInterp(isolevel, voxelVertices[3], isovalue1(3), voxelVertices[0], isovalue1(0));
+vertlist[4] =  vertexInterp(isolevel, voxelVertices[4], isovalue2(4), voxelVertices[5], isovalue2(5));
+vertlist[5] =  vertexInterp(isolevel, voxelVertices[5], isovalue2(5), voxelVertices[6], isovalue2(6));
+vertlist[6] =  vertexInterp(isolevel, voxelVertices[6], isovalue2(6), voxelVertices[7], isovalue2(7));
+vertlist[7] =  vertexInterp(isolevel, voxelVertices[7], isovalue2(7), voxelVertices[4], isovalue2(4));  
+vertlist[8] =  vertexInterp(isolevel, voxelVertices[0], isovalue1(0), voxelVertices[4], isovalue2(4));
+vertlist[9] =  vertexInterp(isolevel, voxelVertices[1], isovalue1(1), voxelVertices[5], isovalue2(5));
+vertlist[10] =  vertexInterp(isolevel, voxelVertices[2], isovalue1(2), voxelVertices[6], isovalue2(6));
+vertlist[11] =  vertexInterp(isolevel, voxelVertices[3], isovalue1(3), voxelVertices[7], isovalue2(7));
  */
  
   for(int i=0; i<4; i++){
-        vertlist[i] = vertexInterp(isolevel, voxelVertices[i], getIsovalue1(i), voxelVertices[(i+1)%4], getIsovalue1((i+1)%4));  
-        vertlist[i+4] = vertexInterp(isolevel, voxelVertices[i+4], getIsovalue2(i+4), voxelVertices[(i+5)%4 + 4], getIsovalue2((i+5)%4 + 4));
-        vertlist[i+8] = vertexInterp(isolevel, voxelVertices[i], getIsovalue1(i), voxelVertices[i+4], getIsovalue2(i+4));
+        vertlist[i] = /*vec3(0,0,0);*/ vertexInterp(isolevel, voxelVertices[i], isovalue1[i], voxelVertices[(i+1)%4], isovalue1[(i+1)%4]);  
+        vertlist[i+4] = vertexInterp(isolevel, voxelVertices[i+4], isovalue2[i], voxelVertices[(i+5)%4 + 4], isovalue2[(i+5)%4]);
+        vertlist[i+8] = vertexInterp(isolevel, voxelVertices[i], isovalue1[i], voxelVertices[i+4], isovalue2[i]);
   }
 
+<<<<<<< HEAD
+ /*    for(int i=0; i<4; i++){
+        vertlist[i] = vertlist[i] - vertlist[i] + midPoint(voxelVertices[i], voxelVertices[(i+1)%4]);  
+        vertlist[i+4] = midPoint(voxelVertices[i+4], voxelVertices[(i+5)%4 + 4]);
+        vertlist[i+8] = midPoint(voxelVertices[i], voxelVertices[i+4]);
+  }  */
+ 
+=======
+/*    for(int i=0; i<4; i++){
+        vertlist[i] = midPoint(voxelVertices[i], voxelVertices[(i+1)%4]);  
+        vertlist[i+4] = midPoint(voxelVertices[i+4], voxelVertices[(i+5)%4 + 4]);
+        vertlist[i+8] = midPoint(voxelVertices[i], voxelVertices[i+4]);
+  } */
+
+>>>>>>> b56438fb6bcca74867c6eaee150aedd07fe98533
 
   renderCase(cubeindex, vertlist);
 
