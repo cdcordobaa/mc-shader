@@ -85,7 +85,7 @@ void glBlock(){
     for(VBO vbo: VBOlist)
       vbo.enableVertAttrib(gl,stride);
 
-    gl.glDrawArrays(PGL.POINTS, 0, positionsVBO.data.length);
+    gl.glDrawArrays(PGL.POINTS, 0, positionsVBO.data.length/4);
 
     for(VBO vbo: VBOlist)
       vbo.disableVertAttrib(gl);

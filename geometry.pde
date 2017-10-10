@@ -112,5 +112,3 @@ float pointsCloudIsovalue(float x, float y, float z){
     }
     return isoValue;
 }
-
-
