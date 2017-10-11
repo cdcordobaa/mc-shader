@@ -5,6 +5,8 @@ in vec4 color;
 in vec4 vertIsovalues_1;
 in vec4 vertIsovalues_2;
 
+uniform sampler2D triTableTex;
+
 in vec3 normal;
  
 out VertexData {

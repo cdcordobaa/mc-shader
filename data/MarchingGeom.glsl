@@ -7,6 +7,7 @@ uniform mat4 transformMatrix;
 uniform mat4 modelviewMatrix;
 uniform mat3 normalMatrix;
 uniform float size;
+uniform sampler2D triTableTex;
 
 //light
 const vec3 lightDirection = normalize(vec3(0.4, -10, 0.8));
@@ -76,11 +77,18 @@ int triTable_transpose[16][256] = {
       {-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1}};
 
 
+int triTableValue(int i, int j){ 
+  //FragOut.color = vec4(texture(triTableTex, vec2(i, j).ab, 0 , 1) ;
+  //return int(texture(triTableTex, vec2(i, j)).a);
+  return int(texelFetch(triTableTex, ivec2(j, i), 0).a); 
+  // return 0;
+} 
+
 void createVertex(vec3 offset, float brightness){
 vec4 actualOffset = vec4(offset*size, 0.0);
 vec4 worldPosition = gl_in[0].gl_Position + actualOffset;
 gl_Position = transformMatrix * worldPosition;
-FragOut.color = VertexIn[0].color /*vec4(255,0,255,1)*/ * brightness;
+//FragOut.color = VertexIn[0].color /*vec4(255,0,255,1)*/ * brightness;
 EmitVertex();
 }
 
@@ -103,7 +111,7 @@ void createTriangle(vec3 u, vec3 v, vec3 w){
 void renderCase(int cubeindex, vec3 vertlist[12]){
  
  int u,v,w;
-
+ 
  if(triTable_transpose[0][cubeindex] != -1){
       u = triTable_transpose[0][cubeindex];  
       v = triTable_transpose[1][cubeindex];
@@ -140,7 +148,20 @@ void renderCase(int cubeindex, vec3 vertlist[12]){
       w = triTable_transpose[14][cubeindex];
       createTriangle(vertlist[u], vertlist[v], vertlist[w]);
  }
+ 
 
+ /* 
+ for (int i=0; i<16; i+=3){
+      int triVal = triTableValue(cubeindex, i);
+      if(triVal != -1){
+        u = triVal;  
+        v = triTableValue(cubeindex, i+1);
+        w = triTableValue(cubeindex, i+2);
+        createTriangle(vertlist[u], vertlist[v], vertlist[w]);
+      }
+     
+ }
+ */
 }
 
 vec3 midPoint(vec3 p1, vec3 p2){
@@ -294,28 +315,23 @@ vertlist[9] =  vertexInterp(isolevel, voxelVertices[1], isovalue1(1), voxelVerti
 vertlist[10] =  vertexInterp(isolevel, voxelVertices[2], isovalue1(2), voxelVertices[6], isovalue2(6));
 vertlist[11] =  vertexInterp(isolevel, voxelVertices[3], isovalue1(3), voxelVertices[7], isovalue2(7));
  */
- 
+ int test = int(texture(triTableTex, vec2(0,0)).a);
+// int test = int(texelFetch(triTableTex, ivec2(j, i), 0).a)
+ if(test > 0 ){
+   FragOut.color = VertexIn[0].color /*vec4(255,0,255,1)*/ ;
+ }
   for(int i=0; i<4; i++){
-        vertlist[i] = /*vec3(0,0,0);*/ vertexInterp(isolevel, voxelVertices[i], isovalue1[i], voxelVertices[(i+1)%4], isovalue1[(i+1)%4]);  
+        vertlist[i] = test* /*vec3(0,0,0);*/ vertexInterp(isolevel, voxelVertices[i], isovalue1[i], voxelVertices[(i+1)%4], isovalue1[(i+1)%4]);  
         vertlist[i+4] = vertexInterp(isolevel, voxelVertices[i+4], isovalue2[i], voxelVertices[(i+5)%4 + 4], isovalue2[(i+5)%4]);
-        vertlist[i+8] = vertexInterp(isolevel, voxelVertices[i], isovalue1[i], voxelVertices[i+4], isovalue2[i]);
+        vertlist[i+8] =  vertexInterp(isolevel, voxelVertices[i], isovalue1[i], voxelVertices[i+4], isovalue2[i]);
   }
 
-<<<<<<< HEAD
  /*    for(int i=0; i<4; i++){
         vertlist[i] = vertlist[i] - vertlist[i] + midPoint(voxelVertices[i], voxelVertices[(i+1)%4]);  
         vertlist[i+4] = midPoint(voxelVertices[i+4], voxelVertices[(i+5)%4 + 4]);
         vertlist[i+8] = midPoint(voxelVertices[i], voxelVertices[i+4]);
   }  */
  
-=======
-/*    for(int i=0; i<4; i++){
-        vertlist[i] = midPoint(voxelVertices[i], voxelVertices[(i+1)%4]);  
-        vertlist[i+4] = midPoint(voxelVertices[i+4], voxelVertices[(i+5)%4 + 4]);
-        vertlist[i+8] = midPoint(voxelVertices[i], voxelVertices[i+4]);
-  } */
-
->>>>>>> b56438fb6bcca74867c6eaee150aedd07fe98533
 
   renderCase(cubeindex, vertlist);
 
